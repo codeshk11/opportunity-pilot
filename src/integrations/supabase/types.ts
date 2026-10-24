@@ -14,7 +14,207 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agent_runs: {
+        Row: {
+          id: string
+          listing_id: string | null
+          result: Json
+          run_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          listing_id?: string | null
+          result?: Json
+          run_id: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          listing_id?: string | null
+          result?: Json
+          run_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      listings: {
+        Row: {
+          deadline: string | null
+          documents: Json
+          eligibility: string | null
+          id: string
+          last_verified_at: string | null
+          source_url: string | null
+          summary: string | null
+          title: string
+          type: string
+          url: string
+        }
+        Insert: {
+          deadline?: string | null
+          documents?: Json
+          eligibility?: string | null
+          id?: string
+          last_verified_at?: string | null
+          source_url?: string | null
+          summary?: string | null
+          title: string
+          type: string
+          url: string
+        }
+        Update: {
+          deadline?: string | null
+          documents?: Json
+          eligibility?: string | null
+          id?: string
+          last_verified_at?: string | null
+          source_url?: string | null
+          summary?: string | null
+          title?: string
+          type?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          id: string
+          listing_id: string
+          missing: Json
+          score: number
+          user_id: string
+          why_match: string | null
+        }
+        Insert: {
+          id?: string
+          listing_id: string
+          missing?: Json
+          score: number
+          user_id: string
+          why_match?: string | null
+        }
+        Update: {
+          id?: string
+          listing_id?: string
+          missing?: Json
+          score?: number
+          user_id?: string
+          why_match?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          branch: string | null
+          category: string | null
+          cgpa: number | null
+          college: string | null
+          completed_at: string | null
+          family_income_range: string | null
+          interests: string[]
+          name: string | null
+          skills: string[]
+          state: string | null
+          user_id: string
+          year: string | null
+        }
+        Insert: {
+          branch?: string | null
+          category?: string | null
+          cgpa?: number | null
+          college?: string | null
+          completed_at?: string | null
+          family_income_range?: string | null
+          interests?: string[]
+          name?: string | null
+          skills?: string[]
+          state?: string | null
+          user_id: string
+          year?: string | null
+        }
+        Update: {
+          branch?: string | null
+          category?: string | null
+          cgpa?: number | null
+          college?: string | null
+          completed_at?: string | null
+          family_income_range?: string | null
+          interests?: string[]
+          name?: string | null
+          skills?: string[]
+          state?: string | null
+          user_id?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
+      saved: {
+        Row: {
+          listing_id: string
+          reminder_date: string | null
+          user_id: string
+        }
+        Insert: {
+          listing_id: string
+          reminder_date?: string | null
+          user_id: string
+        }
+        Update: {
+          listing_id?: string
+          reminder_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
