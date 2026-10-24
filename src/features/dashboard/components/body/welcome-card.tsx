@@ -14,6 +14,19 @@ const regionOptions = ['All regions', 'Your state', 'Across India', 'Internation
 const yearOptions = ['All years', '1st year', '2nd year', 'Other years', 'Not specified']
 const costOptions = ['All costs', 'Free', 'Paid', 'Not specified']
 
+function getDeadlineLabel(deadline: string | null): string {
+  if (!deadline) return 'Deadline not found'
+  const [year, month, day] = deadline.split('-').map(Number)
+  const deadlineDate = new Date(year, month - 1, day)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const daysLeft = Math.round((deadlineDate.getTime() - today.getTime()) / 86_400_000)
+  if (daysLeft < 0) return 'Deadline passed'
+  if (daysLeft === 0) return 'Due today'
+  if (daysLeft === 1) return '1 day left'
+  return `${daysLeft} days left`
+}
+
 export function WelcomeCard({
   name,
   className,
@@ -192,6 +205,9 @@ export function WelcomeCard({
                         </p>
                       )}
                       <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant={opportunity.deadline ? 'secondary' : 'outline'}>
+                          Deadline: {getDeadlineLabel(opportunity.deadline)}
+                        </Badge>
                         <Badge variant="secondary">Region: {opportunity.region}</Badge>
                         <Badge variant="secondary">Year: {opportunity.eligibleYears.join(', ')}</Badge>
                         <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
