@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { IconSearch, IconSparkles, IconExternalLink } from '@tabler/icons-react'
+import { IconSearch, IconSparkles, IconExternalLink, IconDownload } from '@tabler/icons-react'
 
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { findOpportunities } from '@/features/dashboard/api/find-opportunities'
+import { getAutofillProfile } from '@/features/dashboard/api/get-autofill-profile'
 import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +27,19 @@ export function WelcomeCard({
 
   const search = useMutation({
     mutationFn: () => findOpportunities(),
+  })
+
+  const exportProfile = useMutation({
+    mutationFn: () => getAutofillProfile(),
+    onSuccess: (profile) => {
+      const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'opppilot-autofill-profile.json'
+      link.click()
+      URL.revokeObjectURL(url)
+    },
   })
 
   const filteredOpportunities = (search.data ?? []).filter((opportunity) => {
@@ -71,6 +85,9 @@ export function WelcomeCard({
           Find scholarships, internships, hackathons and government schemes
           using live web results matched to your student profile.
         </p>
+        <p className="mt-3 max-w-xl text-sm text-foreground/60">
+          Want faster applications? Export your profile JSON, import it into the OppPilot Autofill Chrome extension, and fill matching fields on opportunity forms. You always review and submit manually.
+        </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
             size="lg"
@@ -80,6 +97,16 @@ export function WelcomeCard({
           >
             <IconSearch data-icon="inline-start" />
             {search.isPending ? 'Searching the web…' : 'Find opportunities'}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => exportProfile.mutate()}
+            disabled={exportProfile.isPending}
+            className="h-12 rounded-full px-5 text-base font-semibold"
+          >
+            <IconDownload data-icon="inline-start" />
+            {exportProfile.isPending ? 'Preparing profile…' : 'Export autofill profile'}
           </Button>
           <Badge variant="outline" className="bg-card">
             {search.isPending
