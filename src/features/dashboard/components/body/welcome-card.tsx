@@ -90,7 +90,7 @@ export function WelcomeCard({
             <div className="space-y-1">
               <h2 className="font-semibold">Opportunities found</h2>
               <p className="text-sm text-foreground/70">
-                Filter by region, academic year, and cost. These labels are cautious estimates from search-result text, not official verification. Open the source page to confirm eligibility, location, and fees before applying.
+                OppPilot now tries to read each opportunity page with TinyFish Fetch before classifying it. Labels are based on page text when available; if a page cannot be read or a detail is unclear, it may still show Not specified. Confirm important requirements on the source page.
               </p>
             </div>
 
@@ -156,9 +156,14 @@ export function WelcomeCard({
                         <Badge variant="secondary">Year: {opportunity.eligibleYears.join(', ')}</Badge>
                         <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
                       </div>
-                      <p className="mt-2 text-xs text-foreground/50">
-                        Source: {opportunity.siteName}
-                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <p className="text-xs text-foreground/50">
+                          Source: {opportunity.siteName}
+                        </p>
+                        <Badge variant={opportunity.detailsChecked ? 'secondary' : 'outline'}>
+                          {opportunity.detailsChecked ? 'Page content fetched' : 'Search result only'}
+                        </Badge>
+                      </div>
                       <a
                         href={opportunity.url}
                         target="_blank"
