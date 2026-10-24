@@ -1,4 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AccountHeader } from '@/components/account-header';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
+import { useAccount } from '@/components/account-context';
+import { profileDestination } from '@/lib/profile-schema';
 import { Search, ShieldCheck, Target, BellRing, MousePointerClick, ArrowRight, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -24,15 +30,21 @@ const features = [
 ];
 
 function Index() {
+  const { user } = useAccount();
+  const navigate = Route.useNavigate();
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    // Confirmation emails return to the public home before entering the account flow.
+    if (!window.location.hash.includes('type=signup')) return;
+    supabase.from('profiles').select('completed_at').eq('user_id', user.id).maybeSingle().then(({ data, error }) => {
+      if (active && !error) navigate({ to: profileDestination(data), replace: true });
+    });
+    return () => { active = false; };
+  }, [user, navigate]);
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 fade-up">
-        <div className="flex items-center gap-2 text-lg font-bold">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground"><Sparkles className="h-5 w-5" /></span>
-          OppPilot
-        </div>
-        <button className="btn-pop rounded-full bg-card px-5 py-2 text-sm font-medium">Sign in</button>
-      </header>
+      <AccountHeader />
 
       <section className="mx-auto max-w-4xl px-6 pb-16 pt-12 text-center md:pt-20">
         <span className="fade-up inline-block rounded-full bg-lavender px-4 py-1 text-sm font-medium">For Indian college students</span>
@@ -42,9 +54,9 @@ function Index() {
         <p className="fade-up mx-auto mt-6 max-w-2xl text-lg text-muted-foreground" style={{ animationDelay: "200ms" }}>
           Scholarships, internships, hackathons and government schemes — matched to you and ready to apply.
         </p>
-        <button className="btn-pop fade-up mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground" style={{ animationDelay: "300ms" }}>
+        <Button asChild className="btn-pop fade-up mt-10 h-auto rounded-full px-8 py-4 text-base font-semibold" style={{ animationDelay: "300ms" }}><Link to="/auth">
           Get started <ArrowRight className="h-5 w-5" />
-        </button>
+        </Link></Button>
       </section>
 
       <section className="mx-auto grid max-w-6xl auto-rows-[minmax(180px,auto)] grid-cols-1 gap-5 px-6 pb-24 md:grid-cols-4">
