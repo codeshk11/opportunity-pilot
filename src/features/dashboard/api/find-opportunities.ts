@@ -14,7 +14,7 @@ export type OpportunitySearchResult = {
   siteName: string
   type: string
   region: OpportunityRegion
-  eligibleYear: OpportunityYear
+  eligibleYears: OpportunityYear[]
   cost: OpportunityCost
 }
 
@@ -134,7 +134,9 @@ export const findOpportunities = createServerFn({ method: 'POST' })
               : typeof item.siteName === 'string'
                 ? item.siteName
                 : new URL(url).hostname
-          const evidence = `${title} ${snippet} ${siteName}`
+          // Classify only from the title and snippet, not the site's brand name.
+          // Search-result text is not official verification, so uncertain details stay unspecified.
+          const evidence = `${title} ${snippet}`
           return {
             title,
             url,
@@ -142,7 +144,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
             siteName,
             type: interest,
             region: classifyRegion(evidence, profile.state),
-            eligibleYear: classifyYear(evidence),
+            eligibleYears: classifyYears(evidence),
             cost: classifyCost(evidence),
           }
         })
