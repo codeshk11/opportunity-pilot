@@ -14,7 +14,7 @@ export type OpportunitySearchResult = {
   siteName: string
   type: string
   region: OpportunityRegion
-  eligibleYear: OpportunityYear
+  eligibleYears: OpportunityYear[]
   cost: OpportunityCost
 }
 
@@ -52,21 +52,27 @@ function classifyRegion(text: string, state?: string | null): OpportunityRegion 
   return 'Not specified'
 }
 
-function classifyYear(text: string): OpportunityYear {
+function classifyYears(text: string): OpportunityYear[] {
   const normalized = text.toLowerCase()
-  const first = /\b(first year|1st year|year 1|freshman|first-year students)\b/.test(normalized)
-  const second = /\b(second year|2nd year|year 2|sophomore|second-year students)\b/.test(normalized)
-  if (/\b(all years|any year|all academic years|open to students of every year)\b/.test(normalized)) return 'All years'
-  if (first && !second) return '1st year'
-  if (second && !first) return '2nd year'
-  if (/\b(third year|3rd year|fourth year|4th year|final year)\b/.test(normalized) && !first && !second) return 'Other years'
-  return 'Not specified'
+  const first = /\b(first[- ]year|1st[- ]year|year 1|freshman|first year students)\b/.test(normalized)
+  const second = /\b(second[- ]year|2nd[- ]year|year 2|sophomore|second year students)\b/.test(normalized)
+  const other = /\b(third[- ]year|3rd[- ]year|fourth[- ]year|4th[- ]year|final[- ]year|year 3|year 4)\b/.test(normalized)
+  if (/\b(all years|any year|all academic years|open to students of every year|students from any year)\b/.test(normalized)) return ['All years']
+
+  const years: OpportunityYear[] = []
+  if (first) years.push('1st year')
+  if (second) years.push('2nd year')
+  if (other) years.push('Other years')
+  return years.length ? years : ['Not specified']
 }
 
 function classifyCost(text: string): OpportunityCost {
   const normalized = text.toLowerCase()
-  if (/\b(no application fee|no registration fee|no participation fee|free to apply|free registration|completely free|fully free|free of cost|zero fee|no fee required)\b/.test(normalized)) return 'Free'
-  if (/\b(application fee|registration fee|participation fee|program fee|course fee|paid registration|fee required|₹\s?[\d,]+|inr\s?[\d,]+)\b/.test(normalized)) return 'Paid'
+  const explicitlyFree = /\b(no|without)\s+(an?\s+)?(application|registration|participation|program|course)\s+fee\b|\b(free to apply|free registration|completely free|fully free|free of charge|free of cost|zero fees?|no fee required)\b/.test(normalized)
+  if (explicitlyFree) return 'Free'
+
+  const explicitlyPaid = /\b(paid registration|application fee of|registration fee of|participation fee of|program fee of|course fee of|fee required|fee applies|paid program)\b|(?:₹|\binr\s?|\brs\.?\s?)\s?[\d,]+/i.test(normalized)
+  if (explicitlyPaid) return 'Paid'
   return 'Not specified'
 }
 
@@ -134,7 +140,9 @@ export const findOpportunities = createServerFn({ method: 'POST' })
               : typeof item.siteName === 'string'
                 ? item.siteName
                 : new URL(url).hostname
-          const evidence = `${title} ${snippet} ${siteName}`
+          // Classify only from the title and snippet, not the site's brand name.
+          // Search-result text is not official verification, so uncertain details stay unspecified.
+          const evidence = `${title} ${snippet}`
           return {
             title,
             url,
@@ -142,7 +150,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
             siteName,
             type: interest,
             region: classifyRegion(evidence, profile.state),
-            eligibleYear: classifyYear(evidence),
+            eligibleYears: classifyYears(evidence),
             cost: classifyCost(evidence),
           }
         })
