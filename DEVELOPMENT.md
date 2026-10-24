@@ -42,9 +42,10 @@ directly.
 | `VITE_SUPABASE_URL` | Browser and server | Supabase project URL |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser and server | Publishable (anon) key; row-level security protects the data |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only, optional | Bypasses row-level security; only for trusted admin work |
+| `TINYFISH_API_KEY` | Server only, optional until search is used | Authenticates live web searches; never prefix it with `VITE_` |
 
 Vite inlines `VITE_*` values into both bundles at build time. Server-only values
-are read from the process environment when the server runs.
+are read from the process environment when the server runs. To enable the dashboard's live opportunity search, add `TINYFISH_API_KEY` in your local `.env` file and in the hosting provider's server environment settings, then redeploy. Never paste the key into source code or expose it through a `VITE_` variable.
 
 ## Supabase
 

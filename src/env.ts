@@ -7,6 +7,8 @@ export const env = createEnv({
   server: {
     // Bypasses row-level security. Read only in trusted server code.
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+    // Server-only TinyFish key. Never use the VITE_ prefix.
+    TINYFISH_API_KEY: z.string().min(1).optional(),
   },
 
   // The prefix that client-side variables must have. Enforced both at a
@@ -26,6 +28,8 @@ export const env = createEnv({
       typeof process === 'undefined'
         ? undefined
         : process.env['SUPABASE_SERVICE_ROLE_KEY'],
+    TINYFISH_API_KEY:
+      typeof process === 'undefined' ? undefined : process.env['TINYFISH_API_KEY'],
   },
 
   isServer: typeof window === 'undefined',
