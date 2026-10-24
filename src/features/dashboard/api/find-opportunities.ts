@@ -254,9 +254,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
         eligibleYears: classifyYears(evidence),
         cost: classifyCost(evidence),
         detailsChecked: Boolean(pageText),
-        snippet: pageText
-          ? `${item.snippet}${item.snippet ? '\\n\\n' : ''}Official page details fetched. Open the source to confirm the current requirements.`
-          : item.snippet,
+        snippet: item.snippet,
       }
     })
   })
