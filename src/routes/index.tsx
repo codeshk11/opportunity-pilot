@@ -49,7 +49,7 @@ function Index() {
       <section className="mx-auto max-w-4xl px-6 pb-16 pt-12 text-center md:pt-20">
         <span className="fade-up inline-block rounded-full bg-lavender px-4 py-1 text-sm font-medium">For Indian college students</span>
         <h1 className="fade-up mt-6 text-4xl font-bold leading-tight tracking-tight md:text-6xl" style={{ animationDelay: "100ms" }}>
-          An AI agent that finds, checks and prepares every opportunity you qualify for, <span className="text-primary">before the deadline</span>
+          An AI agent that finds, checks and prepares every opportunity you qualify for, <span className="text-primary">before the deadline TEST</span>
         </h1>
         <p className="fade-up mx-auto mt-6 max-w-2xl text-lg text-muted-foreground" style={{ animationDelay: "200ms" }}>
           Scholarships, internships, hackathons and government schemes — matched to you and ready to apply.
