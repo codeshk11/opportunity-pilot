@@ -115,7 +115,7 @@ function classifyCost(text: string): OpportunityCost {
 // Extract a deadline only when a date appears close to explicit deadline wording.
 // Returns YYYY-MM-DD so the UI can calculate the countdown from the current date.
 function extractDeadline(text: string): string | null {
-  const datePattern = /\\b(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\s+\\d{4})\\b/gi
+  const datePattern = /\b(?:\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{4}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4}|\d{1,2}\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{4})\b/gi
   const deadlineWords = /deadline|last date|last day to apply|apply by|closing date|application closes|applications close|registration closes|submission closes|due date|must apply by/i
   const monthNames: Record<string, number> = {
     jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
@@ -130,16 +130,16 @@ function extractDeadline(text: string): string | null {
     let year: number
     let month: number
     let day: number
-    let parsed = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/)
+    let parsed = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
     if (parsed) {
       year = Number(parsed[1]); month = Number(parsed[2]) - 1; day = Number(parsed[3])
-    } else if ((parsed = raw.match(/^(\\d{1,2})[/-](\\d{1,2})[/-](\\d{4})$/))) {
+    } else if ((parsed = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/))) {
       // Indian date convention: DD/MM/YYYY.
       day = Number(parsed[1]); month = Number(parsed[2]) - 1; year = Number(parsed[3])
-    } else if ((parsed = raw.match(/^([A-Za-z]+)\\s+(\\d{1,2})\\s+(\\d{4})$/))) {
+    } else if ((parsed = raw.match(/^([A-Za-z]+)\s+(\d{1,2})\s+(\d{4})$/))) {
       month = monthNames[parsed[1].slice(0, 3).toLowerCase()] ?? -1
       day = Number(parsed[2]); year = Number(parsed[3])
-    } else if ((parsed = raw.match(/^(\\d{1,2})\\s+([A-Za-z]+)\\s+(\\d{4})$/))) {
+    } else if ((parsed = raw.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/))) {
       day = Number(parsed[1]); month = monthNames[parsed[2].slice(0, 3).toLowerCase()] ?? -1; year = Number(parsed[3])
     } else {
       continue
