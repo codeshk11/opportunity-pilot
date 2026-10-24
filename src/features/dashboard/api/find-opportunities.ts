@@ -58,20 +58,25 @@ function isHttpUrl(value: unknown): value is string {
 
 function classifyRegion(text: string, state?: string | null): OpportunityRegion {
   const normalized = text.toLowerCase()
-  const international =
-    /\\b(open to|eligible for|applications? from|students from|applicants from)\\b.{0,80}\\b(worldwide|all countries|any country|international students)\\b/.test(normalized) ||
-    /\\b(worldwide applicants|open internationally|international applicants|multiple countries)\\b/.test(normalized)
-  if (international) return 'International'
+  if (/\b(worldwide applicants|open internationally|international applicants|open to international students|applicants from any country|students from all countries|multiple countries)\b/.test(normalized)) {
+    return 'International'
+  }
 
   if (
-    /\\b(pan[- ]india|across india|all over india|nationwide in india|anywhere in india|students across india|all indian states)\\b/.test(normalized) ||
-    /\\b(indian citizens|indian nationals|citizens of india|residents of india|students in india)\\b/.test(normalized)
+    /\b(pan[- ]india|across india|all over india|nationwide in india|anywhere in india|students across india|all indian states|indian citizens|indian nationals|citizens of india|residents of india|students in india)\b/.test(normalized)
   ) return 'Across India'
 
   if (state) {
-    const escapedState = state.toLowerCase().replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')
-    const stateMention = new RegExp('\\\\b(?:in|from|within|resident of|residents of|based in|located in|state of)\\\\s+(?:the\\\\s+)?' + escapedState + '\\\\b|\\\\b' + escapedState + '\\\\s+(?:residents|students|colleges|universities|applicants)\\\\b')
-    if (stateMention.test(normalized)) return 'Your state'
+    const stateName = state.toLowerCase().trim()
+    if (
+      normalized.includes('in ' + stateName) ||
+      normalized.includes('from ' + stateName) ||
+      normalized.includes('within ' + stateName) ||
+      normalized.includes(stateName + ' residents') ||
+      normalized.includes(stateName + ' students') ||
+      normalized.includes(stateName + ' colleges') ||
+      normalized.includes(stateName + ' universities')
+    ) return 'Your state'
   }
 
   return 'Not specified'
@@ -94,13 +99,13 @@ function classifyYears(text: string): OpportunityYear[] {
 function classifyCost(text: string): OpportunityCost {
   const normalized = text.toLowerCase()
   const explicitlyFree =
-    /\\b(no|without)\\s+(an?\\s+)?(application|registration|participation|program|course)\\s+fee\\b/.test(normalized) ||
-    /\\b(free to apply|free registration|free to participate|completely free|fully free|free of charge|free of cost|zero fees?|no fee required|no registration charges)\\b/.test(normalized)
+    /\b(no|without)\s+(an?\s+)?(application|registration|participation|program|course)\s+fee\b/.test(normalized) ||
+    /\b(free to apply|free registration|free to participate|completely free|fully free|free of charge|free of cost|zero fees?|no fee required|no registration charges|no participation fee)\b/.test(normalized)
   if (explicitlyFree) return 'Free'
 
   const explicitlyPaid =
-    /\\b(paid registration|application fee of|registration fee of|participation fee of|program fee of|course fee of|fee required|fee applies|paid program|registration charges apply)\\b/.test(normalized) ||
-    /(?:₹|\\binr\\s?|\\brs\\.?\\s?)\\s?[\\d,]+/i.test(normalized)
+    /\b(paid registration|application fee of|registration fee of|participation fee of|program fee of|course fee of|fee required|fee applies|paid program|registration charges apply|registration fee applies)\b/.test(normalized) ||
+    /(?:₹|\binr\s?|\brs\.?\s?)\s?[\d,]+/i.test(normalized)
   if (explicitlyPaid) return 'Paid'
 
   return 'Not specified'
