@@ -38,6 +38,19 @@ export function WelcomeCard({
     return matchesRegion && matchesYear && matchesCost
   })
 
+  // Put the most useful, complete results first without hiding less-complete results.
+  const sortedOpportunities = [...filteredOpportunities].sort((a, b) => {
+    const completeness = (item: (typeof filteredOpportunities)[number]) =>
+      Number(item.region !== 'Not specified') +
+      Number(!item.eligibleYears.includes('Not specified')) +
+      Number(item.cost !== 'Not specified')
+
+    const completenessDifference = completeness(b) - completeness(a)
+    if (completenessDifference !== 0) return completenessDifference
+    // When completeness is equal, prefer pages whose full content was fetched.
+    return Number(b.detailsChecked) - Number(a.detailsChecked)
+  })
+
   const selectClassName =
     'mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground'
 
@@ -137,7 +150,7 @@ export function WelcomeCard({
                   Showing {filteredOpportunities.length} of {search.data.length} results
                 </p>
                 <ul className="space-y-3">
-                  {filteredOpportunities.map((opportunity) => (
+                  {sortedOpportunities.map((opportunity) => (
                     <li
                       key={opportunity.url}
                       className="rounded-xl border border-border/70 bg-card p-4"
