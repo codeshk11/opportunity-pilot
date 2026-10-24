@@ -1,8 +1,10 @@
-node_modules
-dist
-.output
-.vinxi
-pnpm-lock.yaml
 package-lock.json
-bun.lock
-routeTree.gen.ts
+pnpm-lock.yaml
+yarn.lock
+node_modules
+public
+.output
+.nitro
+.tanstack
+src/routeTree.gen.ts
+src/integrations/supabase/types.ts

@@ -1,0 +1,58 @@
+/* OppPilot light theme: a warm cream canvas, ink text, soft purple accent and
+   five pastel surfaces. Each pastel has an `-ink` partner for icons and text
+   placed on it. */
+:root {
+  --radius: 0.625rem;
+
+  --background: #fbf8f3;
+  --foreground: #2b2b3a;
+  --card: #ffffff;
+  --card-foreground: #2b2b3a;
+  --popover: #ffffff;
+  --popover-foreground: #2b2b3a;
+  --primary: #8b7cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #f2ede5;
+  --secondary-foreground: #2b2b3a;
+  --muted: #f2ede5;
+  --muted-foreground: color-mix(in oklab, #2b2b3a 64%, transparent);
+  --accent: #f2ede5;
+  --accent-foreground: #2b2b3a;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: color-mix(in oklab, #2b2b3a 10%, transparent);
+  --input: color-mix(in oklab, #2b2b3a 16%, transparent);
+  --ring: #8b7cf6;
+
+  --mint: #d9f2e6;
+  --mint-ink: #1d7a52;
+  --lavender: #e6e0f8;
+  --lavender-ink: #5a48c8;
+  --peach: #ffe3d3;
+  --peach-ink: #b8501f;
+  --sky: #d6eaf8;
+  --sky-ink: #1d5e98;
+  --butter: #fff4c2;
+  --butter-ink: #8a6500;
+
+  --elevation-soft:
+    0 1px 2px color-mix(in oklab, #2b2b3a 6%, transparent),
+    0 6px 24px -10px color-mix(in oklab, #2b2b3a 20%, transparent);
+  --elevation-lift:
+    0 2px 4px color-mix(in oklab, #2b2b3a 6%, transparent),
+    0 22px 44px -16px color-mix(in oklab, #8b7cf6 45%, transparent);
+
+  --chart-1: #d4cdfb;
+  --chart-2: #b3a8f9;
+  --chart-3: #8b7cf6;
+  --chart-4: #6d5ae6;
+  --chart-5: #5140c4;
+  --sidebar: #f7f3ec;
+  --sidebar-foreground: #2b2b3a;
+  --sidebar-primary: #8b7cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2ede5;
+  --sidebar-accent-foreground: #2b2b3a;
+  --sidebar-border: color-mix(in oklab, #2b2b3a 10%, transparent);
+  --sidebar-ring: #8b7cf6;
+}

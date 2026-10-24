@@ -1,40 +1,40 @@
-import js from "@eslint/js";
-import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
-import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
+//  @ts-check
 
-export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+import { tanstackConfig } from '@tanstack/eslint-config'
+import { plugin as shadcn } from '@shadcn/lint'
+
+export default [
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      '.output/**',
+      '.nitro/**',
+      '.tanstack/**',
+      'src/routeTree.gen.ts',
+      'src/integrations/supabase/types.ts',
+    ],
+  },
+  ...tanstackConfig,
+  // @shadcn/lint: design-system rules for the app source. It finds the UI
+  // components (@/components/ui) and the theme (src/styles/styles.css) through
+  // components.json. Arbitrary layout values (sizes, grid templates) pass; the
+  // `cn-*` classes are the shadcn registry's style hooks.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { shadcn },
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "server-only",
-              message:
-                "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
-            },
-          ],
-        },
-      ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      'shadcn/no-arbitrary-values': ['error', { allow: ['layout'] }],
+      'shadcn/no-raw-colors': 'error',
+      'shadcn/no-unknown-classes': ['error', { allow: ['cn-*'] }],
     },
   },
-  eslintPluginPrettier,
-);
+  // Component directories own their appearance and may need structural values
+  // such as ring-[3px], so they skip the arbitrary-value rule.
+  {
+    files: ['src/components/ui/**'],
+    rules: {
+      'shadcn/no-arbitrary-values': 'off',
+    },
+  },
+]

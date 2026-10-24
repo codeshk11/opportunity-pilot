@@ -1,0 +1,18 @@
+# Require npm package versions to be at least 7 days old before installation.
+minimumReleaseAge: 10080
+
+# Block versions whose publish trust evidence is weaker than earlier releases.
+trustPolicy: no-downgrade
+
+# Keep exceptions exact-version only so future releases are checked normally.
+# semver@6.3.1 predates npm provenance; @babel/core (via the TanStack router
+# plugin) still depends on it. engineer-web carries the same exception.
+trustPolicyExclude:
+  - "semver@6.3.1"
+
+# What each dependency may do; every capability needs an explicit review.
+# build: lifecycle scripts. unrs-resolver checks the native bindings used by
+# the ESLint import resolver stack.
+permissions:
+  unrs-resolver:
+    build: true

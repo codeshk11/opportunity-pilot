@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/dm-sans';
+
+@import './tokens/base.css';
+@import './tokens/theme.css';
+@import './base.css';
+@import './utilities.css';
+
+/* The app is light-only; shadcn's `dark:` classes apply only under `.dark`. */
+@custom-variant dark (&:is(.dark *));
