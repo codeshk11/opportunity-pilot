@@ -68,7 +68,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
     const searches = profile.interests.map(async (interest) => {
       const query = `current India ${interest} for ${profileContext}; official application page, eligibility, deadline`
       const response = await fetch(
-        `https://api.search.tinyfish.ai?query=${encodeURIComponent(query)}`,
+        `https://api.search.tinyfish.ai?query=${encodeURIComponent(query)}&location=IN&language=en`,
         {
           headers: {
             'X-API-Key': env.TINYFISH_API_KEY!,
