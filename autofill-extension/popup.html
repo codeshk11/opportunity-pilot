@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OppPilot Autofill</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <div class="brand">OppPilot <span>Autofill</span></div>
+    <p class="intro">Fill matching fields from your saved profile. Nothing is submitted for you.</p>
+    <label class="file-label" for="profile-file">1. Import your OppPilot profile JSON</label>
+    <input id="profile-file" type="file" accept="application/json,.json">
+    <p id="status" role="status">No profile imported yet.</p>
+    <button id="fill" disabled>2. Fill this page</button>
+    <button id="clear" class="secondary">Clear saved profile</button>
+    <p class="footnote">Check every field for accuracy. This extension never clicks Submit.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
