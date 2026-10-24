@@ -1,8 +1,10 @@
-import { IconSearch, IconSparkles } from '@tabler/icons-react'
+import { useMutation } from '@tanstack/react-query'
+import { IconSearch, IconSparkles, IconExternalLink } from '@tabler/icons-react'
 
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { findOpportunities } from '@/features/dashboard/api/find-opportunities'
 import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +15,10 @@ export function WelcomeCard({
   name: string
   className?: string
 }) {
+  const search = useMutation({
+    mutationFn: () => findOpportunities(),
+  })
+
   return (
     <BentoCard
       tone="mint"
@@ -27,22 +33,77 @@ export function WelcomeCard({
           Welcome {name}
         </h1>
         <p className="mt-3 max-w-lg text-foreground/70 md:text-lg">
-          Your profile is ready. Soon OppPilot will search the web for
-          opportunities that fit it, and check each one before it reaches you.
+          Find scholarships, internships, hackathons and government schemes
+          using live web results matched to your student profile.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
             size="lg"
-            disabled
+            onClick={() => search.mutate()}
+            disabled={search.isPending}
             className="h-12 rounded-full px-6 text-base font-semibold"
           >
             <IconSearch data-icon="inline-start" />
-            Find opportunities
+            {search.isPending ? 'Searching the web…' : 'Find opportunities'}
           </Button>
           <Badge variant="outline" className="bg-card">
-            Coming soon
+            {search.isPending
+              ? 'TinyFish is searching'
+              : search.isSuccess
+                ? `${search.data.length} found`
+                : 'Live search'}
           </Badge>
         </div>
+
+        {search.isError && (
+          <p role="alert" className="mt-4 text-sm text-destructive">
+            {search.error instanceof Error
+              ? search.error.message
+              : 'Search failed. Please try again.'}
+          </p>
+        )}
+
+        {search.isSuccess && (
+          <div className="mt-6 space-y-3">
+            <h2 className="font-semibold">Opportunities found</h2>
+            {search.data.length === 0 ? (
+              <p className="text-sm text-foreground/70">
+                No results came back this time. Try again in a moment.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {search.data.map((opportunity) => (
+                  <li
+                    key={opportunity.url}
+                    className="rounded-xl border border-border/70 bg-card p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <h3 className="font-semibold">{opportunity.title}</h3>
+                      <Badge variant="outline">{opportunity.type}</Badge>
+                    </div>
+                    {opportunity.snippet && (
+                      <p className="mt-2 text-sm text-foreground/70">
+                        {opportunity.snippet}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-foreground/50">
+                      Source: {opportunity.siteName}
+                    </p>
+                    <a
+                      href={opportunity.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
+                    >
+                      Open official page
+                      <IconExternalLink aria-hidden className="size-4" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     </BentoCard>
   )
