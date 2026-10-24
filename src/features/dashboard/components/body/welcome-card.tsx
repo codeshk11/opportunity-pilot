@@ -30,7 +30,10 @@ export function WelcomeCard({
 
   const filteredOpportunities = (search.data ?? []).filter((opportunity) => {
     const matchesRegion = regionFilter === 'All regions' || opportunity.region === regionFilter
-    const matchesYear = yearFilter === 'All years' || opportunity.eligibleYear === yearFilter
+    const matchesYear =
+      yearFilter === 'All years' ||
+      opportunity.eligibleYears.includes(yearFilter as (typeof opportunity.eligibleYears)[number]) ||
+      opportunity.eligibleYears.includes('All years')
     const matchesCost = costFilter === 'All costs' || opportunity.cost === costFilter
     return matchesRegion && matchesYear && matchesCost
   })
@@ -87,8 +90,7 @@ export function WelcomeCard({
             <div className="space-y-1">
               <h2 className="font-semibold">Opportunities found</h2>
               <p className="text-sm text-foreground/70">
-                Filter by region, academic year, and whether an application or participation fee is mentioned.
-                Eligibility and cost are inferred from the search result text, so check the source page before applying.
+                Filter by region, academic year, and cost. These labels are cautious estimates from search-result text, not official verification. Open the source page to confirm eligibility, location, and fees before applying.
               </p>
             </div>
 
@@ -151,7 +153,7 @@ export function WelcomeCard({
                       )}
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Badge variant="secondary">Region: {opportunity.region}</Badge>
-                        <Badge variant="secondary">Year: {opportunity.eligibleYear}</Badge>
+                        <Badge variant="secondary">Year: {opportunity.eligibleYears.join(', ')}</Badge>
                         <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
                       </div>
                       <p className="mt-2 text-xs text-foreground/50">
