@@ -26,6 +26,7 @@ export function LoginPanel() {
       <CredentialsForm
         mode="login"
         submitLabel="Log in"
+        pendingLabel="Logging in…"
         onSubmit={(credentials) => login.mutateAsync(credentials)}
       />
     </AuthPanel>

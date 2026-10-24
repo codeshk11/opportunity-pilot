@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { IconCheck } from '@tabler/icons-react'
+import { AnimatePresence, m } from 'motion/react'
 
 import { FIELD_CLASS_NAMES } from '../../constants'
 import { getFieldA11yIds } from '../../utils/field-a11y'
@@ -19,6 +20,7 @@ import type { FieldErrorValue, FieldOption } from '../../types/options'
 import type { FieldA11yIds } from '../../utils/field-a11y'
 import { Field } from '@/components/ui/field'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { popIn } from '@/lib/motion'
 
 // =============================================================================
 // ToggleGroupField
@@ -200,9 +202,21 @@ function ToggleChips({
             disabled={disabled}
             className="h-11 rounded-full border-input bg-card px-4 data-pressed:border-primary data-pressed:bg-lavender data-pressed:text-lavender-ink"
           >
-            {selected.includes(option.value) ? (
-              <IconCheck data-icon="inline-start" />
-            ) : null}
+            <AnimatePresence initial={false}>
+              {selected.includes(option.value) ? (
+                <m.span
+                  key="check"
+                  data-icon="inline-start"
+                  variants={popIn}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  className="inline-flex"
+                >
+                  <IconCheck />
+                </m.span>
+              ) : null}
+            </AnimatePresence>
             {option.content ?? option.label}
           </ToggleGroupItem>
         ))}

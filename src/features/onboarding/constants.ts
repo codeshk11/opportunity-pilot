@@ -9,6 +9,7 @@ import {
   YEARS,
   YEAR_LABELS,
 } from '@/features/profile/constants'
+import { formatIncomeRange } from '@/features/profile/utils/format-income-range'
 
 export const ONBOARDING_MUTATION_KEY = {
   complete: 'onboarding-complete',
@@ -57,5 +58,5 @@ export const CATEGORY_OPTIONS = CATEGORIES.map((category) => ({
 
 export const INCOME_OPTIONS = INCOME_RANGES.map((range) => ({
   value: range,
-  label: range,
+  label: formatIncomeRange(range),
 }))

@@ -1,68 +1,115 @@
-import { IconArrowRight, IconSparkles } from '@tabler/icons-react'
-import { Link } from '@tanstack/react-router'
+import { Fragment } from 'react'
+import { IconSparkles } from '@tabler/icons-react'
+import { m } from 'motion/react'
+import { CtaLink } from './cta-link'
+import type { Variants } from 'motion/react'
 
 import { Button } from '@/components/ui/button'
-import {
-  OPPORTUNITY_TYPES,
-  OPPORTUNITY_TYPE_META,
-} from '@/constants/opportunity-types'
-import { TONE_CLASSES } from '@/constants/tones'
-import { cn } from '@/lib/utils'
+import { EASE_IN_OUT, EASE_OUT, blurIn } from '@/lib/motion'
 import useAuthStore from '@/store/auth-store'
+
+const HEADLINE_WORDS =
+  'An AI agent that finds, checks and prepares every opportunity you qualify for,'.split(
+    ' ',
+  )
+const DEADLINE_WORDS = ['before', 'the', 'deadline']
+
+// The hero's one orchestrated moment: the headline arrives word by word, the
+// butter highlight sweeps under "before the deadline", then the copy and
+// actions settle in. Each block takes its start time through `custom`.
+const block = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: EASE_OUT, delay },
+  }),
+} satisfies Variants
+
+const headline = {
+  hidden: {},
+  visible: { transition: { delayChildren: 0.1, staggerChildren: 0.035 } },
+} satisfies Variants
+
+const highlight = {
+  hidden: { clipPath: 'inset(0 100% 0 0)' },
+  visible: {
+    clipPath: 'inset(0 0% 0 0)',
+    transition: { duration: 0.6, ease: EASE_IN_OUT, delay: 0.2 },
+  },
+} satisfies Variants
 
 export function LandingHero() {
   const isSignedIn = useAuthStore((state) => state.user !== null)
 
   return (
-    <section className="relative isolate overflow-hidden">
+    // Pulled up under the floating header so the color washes run behind it.
+    <section className="relative isolate -mt-18 overflow-hidden pt-18">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-24 left-[8%] size-72 rounded-full bg-lavender opacity-70 blur-3xl" />
         <div className="absolute top-10 right-[6%] size-80 rounded-full bg-sky opacity-70 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 size-64 -translate-x-1/2 rounded-full bg-peach opacity-50 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-4 pt-14 pb-16 text-center sm:px-6 md:pt-24 md:pb-24">
-        <span className="inline-flex fade-up items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-sm font-medium shadow-sm">
+      <m.div
+        initial="hidden"
+        animate="visible"
+        className="mx-auto flex max-w-5xl flex-col items-center px-4 pt-16 pb-20 text-center sm:px-6 md:pt-24 md:pb-28"
+      >
+        <m.span
+          variants={block}
+          custom={0}
+          className="inline-flex items-center gap-2 rounded-full bg-card px-3.5 py-1.5 text-sm font-medium shadow-sm ring-1 ring-foreground/5"
+        >
           <IconSparkles className="size-4 text-lavender-ink" aria-hidden />
           For Indian college students
-        </span>
+        </m.span>
 
-        <h1
-          className="isolate mt-6 fade-up text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl md:text-6xl"
-          style={{ animationDelay: '80ms' }}
+        <m.h1
+          variants={headline}
+          className="mt-6 text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl"
         >
-          An AI agent that finds, checks and prepares every opportunity you
-          qualify for,{' '}
-          <span className="relative whitespace-nowrap text-primary">
-            <span
+          {HEADLINE_WORDS.map((word, index) => (
+            <Fragment key={index}>
+              <m.span variants={blurIn} className="inline-block">
+                {word}
+              </m.span>{' '}
+            </Fragment>
+          ))}
+          <span className="relative isolate inline-block whitespace-nowrap text-primary">
+            {DEADLINE_WORDS.map((word, index) => (
+              <Fragment key={word}>
+                <m.span variants={blurIn} className="inline-block">
+                  {word}
+                </m.span>
+                {index < DEADLINE_WORDS.length - 1 ? ' ' : null}
+              </Fragment>
+            ))}
+            <m.span
               aria-hidden
+              variants={highlight}
               className="absolute inset-x-0 bottom-1 -z-10 h-1/3 rounded-sm bg-butter"
             />
-            before the deadline
           </span>
-        </h1>
+        </m.h1>
 
-        <p
-          className="mt-6 max-w-2xl fade-up text-lg text-pretty text-muted-foreground md:text-xl"
-          style={{ animationDelay: '160ms' }}
+        <m.p
+          variants={block}
+          custom={0.55}
+          className="mt-6 max-w-2xl text-lg text-pretty text-muted-foreground md:text-xl"
         >
           Scholarships, internships, hackathons and government schemes.
           Verified, matched to your profile and ready to apply.
-        </p>
+        </m.p>
 
-        <div
-          className="mt-9 flex fade-up flex-col items-center gap-3 sm:flex-row"
-          style={{ animationDelay: '240ms' }}
+        <m.div
+          variants={block}
+          custom={0.65}
+          className="mt-9 flex flex-col items-center gap-3 sm:flex-row"
         >
-          <Button
-            size="lg"
-            className="h-12 btn-pop rounded-full px-7 text-base font-semibold"
-            render={<Link to={isSignedIn ? '/dashboard' : '/signup'} />}
-            nativeButton={false}
-          >
-            {isSignedIn ? 'Open your dashboard' : 'Get started'}
-            <IconArrowRight data-icon="inline-end" className="size-5" />
-          </Button>
+          <CtaLink to={isSignedIn ? '/dashboard' : '/signup'}>
+            {isSignedIn ? 'Open dashboard' : 'Get started'}
+          </CtaLink>
           <Button
             variant="ghost"
             size="lg"
@@ -72,31 +119,8 @@ export function LandingHero() {
           >
             See how it works
           </Button>
-        </div>
-
-        <ul
-          aria-label="Opportunity types"
-          className="mt-10 flex fade-up flex-wrap justify-center gap-2"
-          style={{ animationDelay: '320ms' }}
-        >
-          {OPPORTUNITY_TYPES.map((type) => {
-            const meta = OPPORTUNITY_TYPE_META[type]
-            const tone = TONE_CLASSES[meta.tone]
-            return (
-              <li
-                key={type}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium',
-                  tone.surface,
-                )}
-              >
-                <meta.icon className={cn('size-4', tone.ink)} aria-hidden />
-                {meta.label}
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+        </m.div>
+      </m.div>
     </section>
   )
 }

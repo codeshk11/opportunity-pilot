@@ -14,6 +14,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles/styles.css?url'
 import type { ReactNode } from 'react'
 import type { QueryClient } from '@tanstack/react-query'
+import { MotionProvider } from '@/components/shared/motion-provider'
 import { Toaster } from '@/components/ui/toast'
 import { PAGE_TITLES } from '@/constants/page-titles'
 import { supabase } from '@/integrations/supabase/client'
@@ -68,9 +69,11 @@ function RootComponent() {
 
   return (
     <TanStackQueryProvider.Provider queryClient={queryClient}>
-      <Toaster>
-        <Outlet />
-      </Toaster>
+      <MotionProvider>
+        <Toaster>
+          <Outlet />
+        </Toaster>
+      </MotionProvider>
       <TanStackDevtools
         config={{ position: 'bottom-right' }}
         plugins={[

@@ -5,7 +5,11 @@ import {
   IconWorldSearch,
 } from '@tabler/icons-react'
 
+import { m } from 'motion/react'
+import type { Variants } from 'motion/react'
+
 import { BentoCard } from '@/components/shared/bento-card'
+import { EASE_OUT, riseInWithChildren } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 const AGENT_STEPS = [
@@ -31,24 +35,33 @@ const AGENT_STEPS = [
   },
 ] as const
 
+// The card rises in, then its four steps follow left to right.
+const card = riseInWithChildren(0.06, 0.2)
+
+const item = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+} satisfies Variants
+
 // What the agent will do once "Find opportunities" goes live.
 export function NextStepsCard({ className }: { className?: string }) {
   return (
     <BentoCard
       tone="sky"
-      delay={320}
+      variants={card}
       className={cn('flex flex-col gap-5', className)}
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div>
         <h2 className="text-xl font-bold tracking-tight">What happens next</h2>
-        <p className="text-sm text-foreground/60">
+        <p className="mt-1 text-sm text-foreground/60">
           You review everything and press submit yourself.
         </p>
       </div>
       <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {AGENT_STEPS.map((step, index) => (
-          <li
+          <m.li
             key={step.title}
+            variants={item}
             className="flex items-start gap-3 rounded-xl bg-card/80 p-4"
           >
             <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sky text-sky-ink">
@@ -61,7 +74,7 @@ export function NextStepsCard({ className }: { className?: string }) {
               </p>
               <p className="text-sm text-foreground/70">{step.text}</p>
             </div>
-          </li>
+          </m.li>
         ))}
       </ol>
     </BentoCard>

@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
 
 import { BentoCard } from '@/components/shared/bento-card'
+import { riseIn } from '@/lib/motion'
 
-// The white card that holds a login or signup form.
+// The white card that holds a login or signup form. It rises in on mount,
+// so switching between the two pages plays it again.
 export function AuthPanel({
   title,
   description,
@@ -17,7 +19,9 @@ export function AuthPanel({
   return (
     <BentoCard
       interactive={false}
-      delay={80}
+      variants={riseIn}
+      initial="hidden"
+      animate="visible"
       className="flex flex-col gap-7 md:p-9"
     >
       <div>

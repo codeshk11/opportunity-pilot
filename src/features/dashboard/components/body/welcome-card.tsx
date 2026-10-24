@@ -3,6 +3,7 @@ import { IconSearch, IconSparkles } from '@tabler/icons-react'
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 export function WelcomeCard({
@@ -15,7 +16,7 @@ export function WelcomeCard({
   return (
     <BentoCard
       tone="mint"
-      delay={80}
+      variants={riseIn}
       className={cn('flex flex-col justify-between gap-10 md:p-10', className)}
     >
       <BentoIcon tone="mint">

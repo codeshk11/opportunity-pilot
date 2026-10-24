@@ -5,6 +5,7 @@ import type { Profile } from '@/features/profile/types'
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { OPPORTUNITY_TYPE_META } from '@/constants/opportunity-types'
 import { TONE_CLASSES } from '@/constants/tones'
+import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 function isOpportunityType(value: string): value is OpportunityType {
@@ -24,7 +25,7 @@ export function InterestsCard({
   return (
     <BentoCard
       tone="peach"
-      delay={240}
+      variants={riseIn}
       className={cn('flex flex-col gap-5', className)}
     >
       <div className="flex items-center gap-3">

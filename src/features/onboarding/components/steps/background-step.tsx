@@ -11,9 +11,12 @@ import { FormFields } from '@/components/shared/form-fields'
 
 export function BackgroundStep({
   defaultValues,
+  focusHeading,
   onBack,
   onNext,
 }: {
+  // Move focus to the step heading on mount (after Back or Continue).
+  focusHeading: boolean
   defaultValues: BackgroundStepValues
   // Receives the step's current values, valid or not, so going back keeps
   // them.
@@ -34,6 +37,7 @@ export function BackgroundStep({
   return (
     <StepForm
       formRef={formRef}
+      focusHeading={focusHeading}
       title="The details that matter"
       description="Most scholarships and schemes set limits on these."
       isSubmitting={false}

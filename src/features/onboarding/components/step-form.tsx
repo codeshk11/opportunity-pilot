@@ -1,16 +1,21 @@
+import { useEffect, useRef } from 'react'
 import { IconArrowLeft, IconArrowRight, IconCheck } from '@tabler/icons-react'
 import type { ReactNode, RefObject } from 'react'
 
+import { AnimatedLabel } from '@/components/shared/animated-label'
 import { Button } from '@/components/ui/button'
 
 // The frame every onboarding step shares: heading, fields, and Back /
 // Continue actions. `onSubmit` should call the step form's `handleSubmit`.
+// With `focusHeading`, the heading takes focus on mount, so keyboard and
+// screen reader users land on the new step after Back or Continue.
 export function StepForm({
   formRef,
   title,
   description,
   isLastStep = false,
   isSubmitting,
+  focusHeading = false,
   onBack,
   onSubmit,
   children,
@@ -20,10 +25,19 @@ export function StepForm({
   description: string
   isLastStep?: boolean
   isSubmitting: boolean
+  focusHeading?: boolean
   onBack?: () => void
   onSubmit: () => void
   children: ReactNode
 }) {
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  useEffect(() => {
+    if (focusHeading) headingRef.current?.focus()
+  }, [focusHeading])
+
+  const submitState = isSubmitting ? 'saving' : isLastStep ? 'save' : 'next'
+
   return (
     <form
       ref={formRef}
@@ -36,7 +50,11 @@ export function StepForm({
       }}
     >
       <div>
-        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="scroll-mt-28 text-2xl font-bold tracking-tight outline-none md:text-3xl"
+        >
           {title}
         </h2>
         <p className="mt-1.5 text-foreground/70">{description}</p>
@@ -66,16 +84,21 @@ export function StepForm({
           className="h-11 btn-pop rounded-full px-6 font-semibold"
           disabled={isSubmitting}
         >
-          {isSubmitting
-            ? 'Saving…'
-            : isLastStep
-              ? 'Save my profile'
-              : 'Continue'}
-          {isSubmitting ? null : isLastStep ? (
-            <IconCheck data-icon="inline-end" />
-          ) : (
-            <IconArrowRight data-icon="inline-end" />
-          )}
+          <AnimatedLabel labelKey={submitState}>
+            {submitState === 'saving' ? 'Saving…' : null}
+            {submitState === 'save' ? (
+              <>
+                Save my profile
+                <IconCheck data-icon="inline-end" />
+              </>
+            ) : null}
+            {submitState === 'next' ? (
+              <>
+                Continue
+                <IconArrowRight data-icon="inline-end" />
+              </>
+            ) : null}
+          </AnimatedLabel>
         </Button>
       </div>
     </form>

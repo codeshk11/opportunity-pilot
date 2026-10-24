@@ -68,6 +68,9 @@
   `pnpm dlx shadcn@latest add <name>`. Colors come from theme tokens, never a
   Tailwind palette color or hex in a class. Avoid continuously repainting
   animations (spinners, pulses, shimmer).
+- **Motion**: animate with `m` components from `motion/react` and the shared
+  variants in `src/lib/motion.ts`; follow [Motion](./DEVELOPMENT.md#motion).
+  No em dashes in visible copy.
 - **Database**: schema changes go in a new file under
   [supabase/migrations](./supabase/migrations/) with row-level security on every
   table; regenerate `src/integrations/supabase/types.ts` afterwards.

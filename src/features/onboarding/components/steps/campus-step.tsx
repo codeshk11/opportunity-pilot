@@ -10,8 +10,11 @@ import { FormFields } from '@/components/shared/form-fields'
 
 export function CampusStep({
   defaultValues,
+  focusHeading,
   onNext,
 }: {
+  // Move focus to the step heading on mount (after Back or Continue).
+  focusHeading: boolean
   defaultValues: CampusStepValues
   onNext: (values: CampusStepValues) => void
 }) {
@@ -26,6 +29,7 @@ export function CampusStep({
   return (
     <StepForm
       formRef={formRef}
+      focusHeading={focusHeading}
       title="Hello, campus explorer"
       description="Where you study decides many of the scholarships and schemes you can apply for."
       isSubmitting={false}

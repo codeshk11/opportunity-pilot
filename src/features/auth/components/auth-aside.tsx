@@ -3,14 +3,18 @@ import {
   IconShieldCheck,
   IconTargetArrow,
 } from '@tabler/icons-react'
+import { m } from 'motion/react'
+import type { Icon } from '@tabler/icons-react'
+import type { Variants } from 'motion/react'
 
 import type { Tone } from '@/constants/tones'
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
+import { EASE_OUT, riseInWithChildren } from '@/lib/motion'
 
 const BENEFITS: Array<{
   title: string
   description: string
-  icon: typeof IconTargetArrow
+  icon: Icon
   tone: Tone
 }> = [
   {
@@ -33,19 +37,25 @@ const BENEFITS: Array<{
   },
 ]
 
+// The card rises in, then its benefits follow one by one.
+const card = riseInWithChildren(0.08, 0.3)
+
+const benefit = {
+  hidden: { opacity: 0, x: -12 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+} satisfies Variants
+
 // The pitch beside the login and signup forms, on large screens only.
 export function AuthAside() {
   return (
     <BentoCard
       tone="lavender"
       interactive={false}
+      variants={card}
       className="flex flex-col justify-between gap-10 max-lg:hidden md:p-10"
     >
       <div>
-        <p className="text-sm font-semibold text-lavender-ink">
-          For Indian college students
-        </p>
-        <h2 className="mt-3 max-w-md text-4xl leading-tight font-bold tracking-tight text-balance">
+        <h2 className="max-w-md text-4xl leading-tight font-bold tracking-tight text-balance">
           Your next chapter starts here
         </h2>
         <p className="mt-4 max-w-md text-foreground/70">
@@ -54,21 +64,22 @@ export function AuthAside() {
         </p>
       </div>
       <ul className="grid gap-3">
-        {BENEFITS.map((benefit) => (
-          <li
-            key={benefit.title}
+        {BENEFITS.map((item) => (
+          <m.li
+            key={item.title}
+            variants={benefit}
             className="flex items-center gap-4 rounded-2xl bg-card/80 p-4"
           >
-            <BentoIcon tone={benefit.tone}>
-              <benefit.icon aria-hidden />
+            <BentoIcon tone={item.tone}>
+              <item.icon aria-hidden />
             </BentoIcon>
             <div>
-              <p className="font-semibold">{benefit.title}</p>
+              <p className="font-semibold">{item.title}</p>
               <p className="text-sm text-muted-foreground">
-                {benefit.description}
+                {item.description}
               </p>
             </div>
-          </li>
+          </m.li>
         ))}
       </ul>
     </BentoCard>

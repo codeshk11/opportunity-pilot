@@ -1,8 +1,10 @@
 import { IconId } from '@tabler/icons-react'
 
 import type { Profile } from '@/features/profile/types'
+import { formatIncomeRange } from '@/features/profile/utils/format-income-range'
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { YEAR_LABELS } from '@/features/profile/constants'
+import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 function yearLabel(year: string | null) {
@@ -27,14 +29,19 @@ export function ProfileCard({
     ],
     ['State', profile.state],
     ['Category', profile.category],
-    ['Family income', profile.family_income_range],
+    [
+      'Family income',
+      profile.family_income_range
+        ? formatIncomeRange(profile.family_income_range)
+        : null,
+    ],
     ['CGPA', profile.cgpa?.toString()],
   ] as const
 
   return (
     <BentoCard
       tone="lavender"
-      delay={160}
+      variants={riseIn}
       className={cn('flex flex-col gap-5', className)}
     >
       <div className="flex items-center gap-3">

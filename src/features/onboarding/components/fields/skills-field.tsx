@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { IconPlus, IconX } from '@tabler/icons-react'
+import { AnimatePresence, m } from 'motion/react'
 
 import type { AmbitionsStepValues } from '../../schemas/steps'
 import type { FormFieldsApi } from '@/components/shared/form-fields'
@@ -16,9 +17,10 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group'
 import { MAX_SKILLS, MAX_SKILL_LENGTH } from '@/features/profile/constants'
+import { EASE_OUT } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
-// Free-text skill tags. Enter, a comma, the + button or leaving the input
+// Free-text skill tags; needs the layout features (`loadLayoutFeatures`). Enter, a comma, the + button or leaving the input
 // adds the typed skill, so nothing typed is lost when the form submits.
 export function SkillsField({
   form,
@@ -101,11 +103,29 @@ export function SkillsField({
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
-            {skills.length > 0 ? (
-              <ul aria-label="Your skills" className="flex flex-wrap gap-2">
+            {/* Tags pop in and out while their neighbours glide into place.
+                `empty:hidden` drops the list once the last exit finishes. */}
+            <ul
+              aria-label="Your skills"
+              className="relative flex flex-wrap gap-2 empty:hidden"
+            >
+              <AnimatePresence initial={false} mode="popLayout">
                 {skills.map((skill) => (
-                  <li
+                  <m.li
                     key={skill}
+                    layout
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.85,
+                      transition: { duration: 0.12, ease: EASE_OUT },
+                    }}
+                    transition={{
+                      type: 'spring',
+                      duration: 0.35,
+                      bounce: 0.15,
+                    }}
                     className="inline-flex max-w-full items-center gap-1 rounded-full bg-card py-1 pr-1 pl-3 text-sm shadow-sm"
                   >
                     <span className="truncate">{skill}</span>
@@ -121,10 +141,10 @@ export function SkillsField({
                     >
                       <IconX />
                     </InputGroupButton>
-                  </li>
+                  </m.li>
                 ))}
-              </ul>
-            ) : null}
+              </AnimatePresence>
+            </ul>
           </FormFieldFrame>
         )
       }}

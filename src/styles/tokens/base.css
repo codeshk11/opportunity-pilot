@@ -35,6 +35,12 @@
   --butter: #fff4c2;
   --butter-ink: #8a6500;
 
+  /* Motion curves (Emil Kowalski's): a strong ease-out for anything entering
+     or answering the user, ease-in-out for things moving on screen. Mirrored
+     in src/lib/motion.ts for Motion. */
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
   --elevation-soft:
     0 1px 2px color-mix(in oklab, #2b2b3a 6%, transparent),
     0 6px 24px -10px color-mix(in oklab, #2b2b3a 20%, transparent);

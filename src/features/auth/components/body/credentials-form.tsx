@@ -1,5 +1,4 @@
 import { useRef } from 'react'
-import { IconArrowRight } from '@tabler/icons-react'
 import { useForm } from '@tanstack/react-form'
 
 import {
@@ -8,6 +7,7 @@ import {
   signupSchema,
 } from '../../schemas/credentials'
 import type { Credentials } from '../../schemas/credentials'
+import { AnimatedLabel } from '@/components/shared/animated-label'
 import { FormFields } from '@/components/shared/form-fields'
 import { FieldGroup } from '@/components/ui/field'
 import { Button } from '@/components/ui/button'
@@ -17,10 +17,13 @@ import { Button } from '@/components/ui/button'
 export function CredentialsForm({
   mode,
   submitLabel,
+  pendingLabel,
   onSubmit,
 }: {
   mode: 'login' | 'signup'
   submitLabel: string
+  // Shown while the request runs, such as "Logging in…".
+  pendingLabel: string
   onSubmit: (credentials: Credentials) => Promise<unknown>
 }) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -83,8 +86,9 @@ export function CredentialsForm({
               disabled={isSubmitting}
               className="mt-2 h-12 w-full btn-pop rounded-full text-base font-semibold"
             >
-              {isSubmitting ? 'Please wait…' : submitLabel}
-              {isSubmitting ? null : <IconArrowRight data-icon="inline-end" />}
+              <AnimatedLabel labelKey={isSubmitting ? 'busy' : 'idle'}>
+                {isSubmitting ? pendingLabel : submitLabel}
+              </AnimatedLabel>
             </Button>
           )}
         </form.Subscribe>

@@ -28,9 +28,12 @@ const INTEREST_OPTIONS = OPPORTUNITY_TYPES.map((type) => {
 
 export function AmbitionsStep({
   defaultValues,
+  focusHeading,
   onBack,
   onSubmit,
 }: {
+  // Move focus to the step heading on mount (after Back or Continue).
+  focusHeading: boolean
   defaultValues: AmbitionsStepValues
   onBack: (values: AmbitionsStepValues) => void
   // Saves the whole profile; failures are reported by the mutation hook.
@@ -55,6 +58,7 @@ export function AmbitionsStep({
       {(isSubmitting) => (
         <StepForm
           formRef={formRef}
+          focusHeading={focusHeading}
           title="What's on your horizon?"
           description="Pick what OppPilot should look for. You can change it later."
           isLastStep

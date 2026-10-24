@@ -43,7 +43,7 @@ export function AccountMenu({ email }: { email: string }) {
       <Button
         variant="ghost"
         size="lg"
-        className="max-sm:hidden"
+        className="h-10 rounded-full px-4 max-sm:hidden"
         render={
           <Link to="/dashboard" activeProps={{ className: 'bg-muted' }} />
         }

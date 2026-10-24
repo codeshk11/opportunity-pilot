@@ -159,7 +159,37 @@ Forms use TanStack Form with Zod schemas.
   (`#8B7CF6`) and five pastels, each with an `-ink` partner for icons and text on
   it. `TONE_CLASSES` in `@/constants/tones` maps a tone to its classes.
 - Utilities in [src/styles/utilities.css](./src/styles/utilities.css):
-  `card-soft` (bento card lift), `btn-pop` (call-to-action hover) and `fade-up`
-  (entrance). All respect reduced motion.
+  `card-soft` (bento card lift) and `btn-pop` (call-to-action hover and press).
+  They use the `translate` and `scale` properties so they compose with Motion,
+  only hover on devices with a real pointer, and respect reduced motion.
+- Shape rule: pills for buttons and chips, `rounded-2xl` for cards,
+  `rounded-xl` for inputs and panels inside cards.
+
+## Motion
+
+Animations use Motion (`motion/react`) through `LazyMotion`, which
+`MotionProvider` sets up in the root route.
+
+- Use the light `m` component (`m.div`), never `motion.div`: `strict` mode
+  throws on a full `motion` component.
+- Easing, shared variants (`riseIn`, `blurIn`, `popIn`,
+  `riseInWithChildren`, `stagger`) and `REVEAL_ONCE` live in
+  [src/lib/motion.ts](./src/lib/motion.ts). Define new variants outside
+  components.
+- A parent sets `initial="hidden"` and `animate="visible"` (on mount) or
+  `whileInView="visible"` with `viewport={REVEAL_ONCE}` (on scroll); children
+  with the same variant names follow it.
+- The root loads `domAnimation`. `layout` and `layoutId` need `domMax`: wrap
+  that subtree in `<LazyMotion features={loadLayoutFeatures}>` (the onboarding
+  wizard does) so it loads on demand.
+- Animate only `transform`, `opacity` and short `filter: blur()`. Entrances
+  use the strong ease-out and stay around 0.3 to 0.6 seconds; exits are
+  faster. Stagger items 30 to 120 ms apart.
+- Motion answers the user or explains something: the hero's one load
+  sequence, feature previews that act out the feature, step changes, tags,
+  ticks and label swaps. Do not add looping or decorative motion.
+- `MotionConfig reducedMotion="user"` drops movement (keeping fades) when the
+  system asks for reduced motion. Hand-rolled animations, such as the match
+  count-up, check `useReducedMotion()` themselves.
 - Handle loading, empty, error and success states, and keep controls labelled
   and keyboard reachable.

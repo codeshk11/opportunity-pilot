@@ -1,41 +1,35 @@
-import type { CSSProperties, ComponentProps } from 'react'
+import { m } from 'motion/react'
+import type { HTMLMotionProps } from 'motion/react'
 
 import type { Tone } from '@/constants/tones'
 import { TONE_CLASSES } from '@/constants/tones'
 import { cn } from '@/lib/utils'
 
-interface BentoCardProps extends ComponentProps<'div'> {
+interface BentoCardProps extends HTMLMotionProps<'div'> {
   tone?: Tone | 'card'
   // Lift on hover. Keep it for cards that read as tiles; turn it off for cards
   // that hold a form.
   interactive?: boolean
-  // Entrance delay in milliseconds for staggered fade-ups.
-  delay?: number
 }
 
-// A tile in a bento grid: rounded-2xl pastel surface with a soft shadow that
-// fades up on load. Size it with grid span classes from the parent layout.
+// A tile in a bento grid: a rounded-2xl pastel surface with a soft shadow.
+// It is a Motion element, so pass `variants` and let a parent drive
+// `hidden` / `visible`. Size it with grid span classes from the parent.
 export function BentoCard({
   tone = 'card',
   interactive = true,
-  delay,
   className,
-  style,
   ...props
 }: BentoCardProps) {
-  const animationStyle: CSSProperties | undefined =
-    delay === undefined ? style : { ...style, animationDelay: `${delay}ms` }
-
   return (
-    <div
+    <m.div
       data-slot="bento-card"
       className={cn(
-        'fade-up rounded-2xl p-6 md:p-7',
+        'rounded-2xl p-6 md:p-7',
         interactive ? 'card-soft' : 'shadow-soft',
         tone === 'card' ? 'bg-card' : TONE_CLASSES[tone].surface,
         className,
       )}
-      style={animationStyle}
       {...props}
     />
   )
