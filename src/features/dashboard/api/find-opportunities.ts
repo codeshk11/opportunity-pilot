@@ -16,6 +16,7 @@ export type OpportunitySearchResult = {
   region: OpportunityRegion
   eligibleYears: OpportunityYear[]
   cost: OpportunityCost
+  detailsChecked: boolean
 }
 
 type TinyFishSearchItem = {
@@ -30,6 +31,21 @@ type TinyFishSearchResponse = {
   results?: TinyFishSearchItem[]
 }
 
+type TinyFishFetchItem = {
+  url?: unknown
+  final_url?: unknown
+  title?: unknown
+  text?: unknown
+  content?: unknown
+  markdown?: unknown
+  raw_content?: unknown
+}
+
+type TinyFishFetchResponse = {
+  results?: TinyFishFetchItem[]
+  data?: TinyFishFetchItem[]
+}
+
 function isHttpUrl(value: unknown): value is string {
   if (typeof value !== 'string') return false
   try {
@@ -42,13 +58,22 @@ function isHttpUrl(value: unknown): value is string {
 
 function classifyRegion(text: string, state?: string | null): OpportunityRegion {
   const normalized = text.toLowerCase()
-  if (/\b(international|global|worldwide|abroad|overseas|foreign students|multiple countries)\b/.test(normalized)) {
-    return 'International'
+  const international =
+    /\\b(open to|eligible for|applications? from|students from|applicants from)\\b.{0,80}\\b(worldwide|all countries|any country|international students)\\b/.test(normalized) ||
+    /\\b(worldwide applicants|open internationally|international applicants|multiple countries)\\b/.test(normalized)
+  if (international) return 'International'
+
+  if (
+    /\\b(pan[- ]india|across india|all over india|nationwide in india|anywhere in india|students across india|all indian states)\\b/.test(normalized) ||
+    /\\b(indian citizens|indian nationals|citizens of india|residents of india|students in india)\\b/.test(normalized)
+  ) return 'Across India'
+
+  if (state) {
+    const escapedState = state.toLowerCase().replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')
+    const stateMention = new RegExp('\\\\b(?:in|from|within|resident of|residents of|based in|located in|state of)\\\\s+(?:the\\\\s+)?' + escapedState + '\\\\b|\\\\b' + escapedState + '\\\\s+(?:residents|students|colleges|universities|applicants)\\\\b')
+    if (stateMention.test(normalized)) return 'Your state'
   }
-  if (state && normalized.includes(state.toLowerCase())) return 'Your state'
-  if (/\b(across india|all india|india-wide|nationwide|national level|pan-india|students across india)\b/.test(normalized)) {
-    return 'Across India'
-  }
+
   return 'Not specified'
 }
 
@@ -68,12 +93,61 @@ function classifyYears(text: string): OpportunityYear[] {
 
 function classifyCost(text: string): OpportunityCost {
   const normalized = text.toLowerCase()
-  const explicitlyFree = /\b(no|without)\s+(an?\s+)?(application|registration|participation|program|course)\s+fee\b|\b(free to apply|free registration|completely free|fully free|free of charge|free of cost|zero fees?|no fee required)\b/.test(normalized)
+  const explicitlyFree =
+    /\\b(no|without)\\s+(an?\\s+)?(application|registration|participation|program|course)\\s+fee\\b/.test(normalized) ||
+    /\\b(free to apply|free registration|free to participate|completely free|fully free|free of charge|free of cost|zero fees?|no fee required|no registration charges)\\b/.test(normalized)
   if (explicitlyFree) return 'Free'
 
-  const explicitlyPaid = /\b(paid registration|application fee of|registration fee of|participation fee of|program fee of|course fee of|fee required|fee applies|paid program)\b|(?:₹|\binr\s?|\brs\.?\s?)\s?[\d,]+/i.test(normalized)
+  const explicitlyPaid =
+    /\\b(paid registration|application fee of|registration fee of|participation fee of|program fee of|course fee of|fee required|fee applies|paid program|registration charges apply)\\b/.test(normalized) ||
+    /(?:₹|\\binr\\s?|\\brs\\.?\\s?)\\s?[\\d,]+/i.test(normalized)
   if (explicitlyPaid) return 'Paid'
+
   return 'Not specified'
+}
+
+async function fetchOfficialPageText(urls: string[]): Promise<Map<string, string>> {
+  const pageTextByUrl = new Map<string, string>()
+  const batches: string[][] = []
+  for (let index = 0; index < urls.length; index += 10) {
+    batches.push(urls.slice(index, index + 10))
+  }
+
+  await Promise.all(batches.map(async (batch) => {
+    try {
+      const response = await fetch('https://api.fetch.tinyfish.ai', {
+        method: 'POST',
+        headers: {
+          'X-API-Key': env.TINYFISH_API_KEY!,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ urls: batch }),
+        signal: AbortSignal.timeout(35_000),
+      })
+      if (!response.ok) return
+
+      const payload = (await response.json()) as TinyFishFetchResponse
+      const items = payload.results ?? payload.data ?? []
+      for (const item of items) {
+        const returnedUrl =
+          typeof item.final_url === 'string' ? item.final_url :
+          typeof item.url === 'string' ? item.url : ''
+        const textContent =
+          typeof item.text === 'string' ? item.text :
+          typeof item.content === 'string' ? item.content :
+          typeof item.markdown === 'string' ? item.markdown :
+          typeof item.raw_content === 'string' ? item.raw_content : ''
+        if (returnedUrl && textContent.trim()) {
+          pageTextByUrl.set(returnedUrl, textContent.slice(0, 18_000))
+        }
+      }
+    } catch {
+      // Search results still work if an official page cannot be fetched.
+    }
+  }))
+
+  return pageTextByUrl
 }
 
 // Searches TinyFish from the server using the signed-in student's saved profile.
@@ -157,10 +231,27 @@ export const findOpportunities = createServerFn({ method: 'POST' })
     })
 
     const groups = await Promise.all(searches)
-    const unique = new Map<string, OpportunitySearchResult>()
+    const unique = new Map<string, Omit<OpportunitySearchResult, 'detailsChecked'>>()
     for (const result of groups.flat()) {
       if (!unique.has(result.url)) unique.set(result.url, result)
     }
 
-    return [...unique.values()].slice(0, 24)
+    const discovered = [...unique.values()].slice(0, 24)
+    // Read the actual opportunity pages so filters use more than search snippets.
+    const pageTextByUrl = await fetchOfficialPageText(discovered.map((item) => item.url))
+
+    return discovered.map((item) => {
+      const pageText = pageTextByUrl.get(item.url)
+      const evidence = pageText ? `${item.title} ${item.snippet} ${pageText}` : `${item.title} ${item.snippet}`
+      return {
+        ...item,
+        region: classifyRegion(evidence, profile.state),
+        eligibleYears: classifyYears(evidence),
+        cost: classifyCost(evidence),
+        detailsChecked: Boolean(pageText),
+        snippet: pageText
+          ? `${item.snippet}${item.snippet ? '\\n\\n' : ''}Official page details fetched. Open the source to confirm the current requirements.`
+          : item.snippet,
+      }
+    })
   })
