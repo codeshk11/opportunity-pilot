@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { IconSearch, IconSparkles, IconExternalLink } from '@tabler/icons-react'
 
@@ -8,6 +9,10 @@ import { findOpportunities } from '@/features/dashboard/api/find-opportunities'
 import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
+const regionOptions = ['All regions', 'Your state', 'Across India', 'International', 'Not specified']
+const yearOptions = ['All years', '1st year', '2nd year', 'Other years', 'Not specified']
+const costOptions = ['All costs', 'Free', 'Paid', 'Not specified']
+
 export function WelcomeCard({
   name,
   className,
@@ -15,9 +20,23 @@ export function WelcomeCard({
   name: string
   className?: string
 }) {
+  const [regionFilter, setRegionFilter] = useState('All regions')
+  const [yearFilter, setYearFilter] = useState('All years')
+  const [costFilter, setCostFilter] = useState('All costs')
+
   const search = useMutation({
     mutationFn: () => findOpportunities(),
   })
+
+  const filteredOpportunities = (search.data ?? []).filter((opportunity) => {
+    const matchesRegion = regionFilter === 'All regions' || opportunity.region === regionFilter
+    const matchesYear = yearFilter === 'All years' || opportunity.eligibleYear === yearFilter
+    const matchesCost = costFilter === 'All costs' || opportunity.cost === costFilter
+    return matchesRegion && matchesYear && matchesCost
+  })
+
+  const selectClassName =
+    'mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground'
 
   return (
     <BentoCard
@@ -64,43 +83,93 @@ export function WelcomeCard({
         )}
 
         {search.isSuccess && (
-          <div className="mt-6 space-y-3">
-            <h2 className="font-semibold">Opportunities found</h2>
-            {search.data.length === 0 ? (
+          <div className="mt-6 space-y-4">
+            <div className="space-y-1">
+              <h2 className="font-semibold">Opportunities found</h2>
               <p className="text-sm text-foreground/70">
-                No results came back this time. Try again in a moment.
+                Filter by region, academic year, and whether an application or participation fee is mentioned.
+                Eligibility and cost are inferred from the search result text, so check the source page before applying.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="text-sm font-medium">
+                Region
+                <select
+                  className={selectClassName}
+                  value={regionFilter}
+                  onChange={(event) => setRegionFilter(event.target.value)}
+                >
+                  {regionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
+              <label className="text-sm font-medium">
+                Academic year eligibility
+                <select
+                  className={selectClassName}
+                  value={yearFilter}
+                  onChange={(event) => setYearFilter(event.target.value)}
+                >
+                  {yearOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
+              <label className="text-sm font-medium">
+                Cost
+                <select
+                  className={selectClassName}
+                  value={costFilter}
+                  onChange={(event) => setCostFilter(event.target.value)}
+                >
+                  {costOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              </label>
+            </div>
+
+            {filteredOpportunities.length === 0 ? (
+              <p className="rounded-xl border border-border/70 bg-card p-4 text-sm text-foreground/70">
+                No results match these filters. Try a different combination or choose “All” options.
               </p>
             ) : (
-              <ul className="space-y-3">
-                {search.data.map((opportunity) => (
-                  <li
-                    key={opportunity.url}
-                    className="rounded-xl border border-border/70 bg-card p-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <h3 className="font-semibold">{opportunity.title}</h3>
-                      <Badge variant="outline">{opportunity.type}</Badge>
-                    </div>
-                    {opportunity.snippet && (
-                      <p className="mt-2 text-sm text-foreground/70">
-                        {opportunity.snippet}
-                      </p>
-                    )}
-                    <p className="mt-2 text-xs text-foreground/50">
-                      Source: {opportunity.siteName}
-                    </p>
-                    <a
-                      href={opportunity.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
+              <>
+                <p className="text-xs text-foreground/50">
+                  Showing {filteredOpportunities.length} of {search.data.length} results
+                </p>
+                <ul className="space-y-3">
+                  {filteredOpportunities.map((opportunity) => (
+                    <li
+                      key={opportunity.url}
+                      className="rounded-xl border border-border/70 bg-card p-4"
                     >
-                      Open official page
-                      <IconExternalLink aria-hidden className="size-4" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <h3 className="font-semibold">{opportunity.title}</h3>
+                        <Badge variant="outline">{opportunity.type}</Badge>
+                      </div>
+                      {opportunity.snippet && (
+                        <p className="mt-2 text-sm text-foreground/70">
+                          {opportunity.snippet}
+                        </p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="secondary">Region: {opportunity.region}</Badge>
+                        <Badge variant="secondary">Year: {opportunity.eligibleYear}</Badge>
+                        <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
+                      </div>
+                      <p className="mt-2 text-xs text-foreground/50">
+                        Source: {opportunity.siteName}
+                      </p>
+                      <a
+                        href={opportunity.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-3 inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
+                      >
+                        Open source page
+                        <IconExternalLink aria-hidden className="size-4" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         )}
