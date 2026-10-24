@@ -16,6 +16,7 @@ export type OpportunitySearchResult = {
   region: OpportunityRegion
   eligibleYears: OpportunityYear[]
   cost: OpportunityCost
+  deadline: string | null
   detailsChecked: boolean
 }
 
@@ -109,6 +110,47 @@ function classifyCost(text: string): OpportunityCost {
   if (explicitlyPaid) return 'Paid'
 
   return 'Not specified'
+}
+
+// Extract a deadline only when a date appears close to explicit deadline wording.
+// Returns YYYY-MM-DD so the UI can calculate the countdown from the current date.
+function extractDeadline(text: string): string | null {
+  const datePattern = /\\b(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}|(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\s+\\d{4})\\b/gi
+  const deadlineWords = /deadline|last date|last day to apply|apply by|closing date|application closes|applications close|registration closes|submission closes|due date|must apply by/i
+  const monthNames: Record<string, number> = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  }
+  const candidates: string[] = []
+  for (const match of text.matchAll(datePattern)) {
+    const index = match.index ?? 0
+    const context = text.slice(Math.max(0, index - 100), Math.min(text.length, index + match[0].length + 100))
+    if (!deadlineWords.test(context)) continue
+    const raw = match[0].replace(/,/g, '').trim()
+    let year: number
+    let month: number
+    let day: number
+    let parsed = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/)
+    if (parsed) {
+      year = Number(parsed[1]); month = Number(parsed[2]) - 1; day = Number(parsed[3])
+    } else if ((parsed = raw.match(/^(\\d{1,2})[/-](\\d{1,2})[/-](\\d{4})$/))) {
+      // Indian date convention: DD/MM/YYYY.
+      day = Number(parsed[1]); month = Number(parsed[2]) - 1; year = Number(parsed[3])
+    } else if ((parsed = raw.match(/^([A-Za-z]+)\\s+(\\d{1,2})\\s+(\\d{4})$/))) {
+      month = monthNames[parsed[1].slice(0, 3).toLowerCase()] ?? -1
+      day = Number(parsed[2]); year = Number(parsed[3])
+    } else if ((parsed = raw.match(/^(\\d{1,2})\\s+([A-Za-z]+)\\s+(\\d{4})$/))) {
+      day = Number(parsed[1]); month = monthNames[parsed[2].slice(0, 3).toLowerCase()] ?? -1; year = Number(parsed[3])
+    } else {
+      continue
+    }
+    const date = new Date(Date.UTC(year, month, day))
+    if (month < 0 || date.getUTCFullYear() !== year || date.getUTCMonth() !== month || date.getUTCDate() !== day) continue
+    candidates.push(date.toISOString().slice(0, 10))
+  }
+  const today = new Date()
+  const todayIso = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())).toISOString().slice(0, 10)
+  return candidates.filter((date) => date >= todayIso).sort()[0] ?? candidates.sort().at(-1) ?? null
 }
 
 async function fetchOfficialPageText(urls: string[]): Promise<Map<string, string>> {
@@ -231,6 +273,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
             region: classifyRegion(evidence, profile.state),
             eligibleYears: classifyYears(evidence),
             cost: classifyCost(evidence),
+            deadline: extractDeadline(evidence),
           }
         })
     })
@@ -253,6 +296,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
         region: classifyRegion(evidence, profile.state),
         eligibleYears: classifyYears(evidence),
         cost: classifyCost(evidence),
+        deadline: extractDeadline(evidence),
         detailsChecked: Boolean(pageText),
         snippet: item.snippet,
       }
