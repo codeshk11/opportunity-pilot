@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 
@@ -10,12 +10,20 @@ import useAuthStore from '@/store/auth-store'
 // the URL hash. Once that session is signed in, continue into the account
 // flow. Call it on the home route.
 export function useEmailConfirmationRedirect() {
+  // Capture the callback intent before the root's session check lets Supabase
+  // consume the hash. By the time SIGNED_IN arrives the hash is already gone.
+  const [isSignupConfirmation] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.hash.slice(1)).get('type') ===
+        'signup',
+  )
   const user = useAuthStore((state) => state.user)
   const router = useRouter()
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!user || !window.location.hash.includes('type=signup')) return
+    if (!user || !isSignupConfirmation) return
     let isActive = true
     queryClient
       .fetchQuery(profileQueryOptions)
@@ -29,5 +37,5 @@ export function useEmailConfirmationRedirect() {
     return () => {
       isActive = false
     }
-  }, [user, router, queryClient])
+  }, [isSignupConfirmation, user, router, queryClient])
 }

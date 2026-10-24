@@ -11,9 +11,13 @@ export async function signInWithPassword(credentials: Credentials) {
 // student to confirm their email first; the link returns them to the home
 // page.
 export async function signUpWithPassword(credentials: Credentials) {
+  const redirectUrl = new URL(window.location.origin)
+  // Lovable Cloud accepts the loopback IP in its redirect list, not localhost.
+  if (redirectUrl.hostname === 'localhost') redirectUrl.hostname = '127.0.0.1'
+
   const { data, error } = await supabase.auth.signUp({
     ...credentials,
-    options: { emailRedirectTo: window.location.origin },
+    options: { emailRedirectTo: redirectUrl.origin },
   })
   if (error) throw error
   return data

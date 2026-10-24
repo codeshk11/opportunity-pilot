@@ -48,6 +48,22 @@ are read from the process environment when the server runs.
 
 ## Supabase
 
+Running the frontend locally does not migrate its backend. The URL in `.env`
+still decides which Supabase or Lovable Cloud instance owns accounts and data.
+Use <http://127.0.0.1:3000> for local development; the dev server binds to that
+loopback address and signup normalizes `localhost` to it for confirmation links.
+
+For the existing Lovable Cloud backend, open the project in Lovable, then
+**More > Users > Settings > Advanced > Redirect URLs**. Add
+`http://127.0.0.1:3000` and click **Save**. Lovable's form rejects `localhost`
+and asks for `127.0.0.1`. Keep the Site URL pointing at the deployed app: it is
+the fallback, while signup explicitly requests the current origin. Add the
+exact origin for each future deployment before testing confirmation there.
+
+Previously sent emails keep their original destination. After updating the
+allowlist, use a new confirmation email. If an old link already confirmed the
+account, log in locally with that account instead of signing up again.
+
 The schema lives in
 [supabase/migrations](./supabase/migrations/). To run against your own project:
 
@@ -62,7 +78,7 @@ The schema lives in
 
    Or paste the migration SQL into the project's SQL editor.
 3. In Authentication > URL Configuration, set the Site URL and add your local
-   and deployed origins (for example `http://localhost:3000`) to the redirect
+   and deployed origins (for example `http://127.0.0.1:3000`) to the redirect
    URLs. Email confirmation links return to the home page.
 4. After a schema change, regenerate the types:
 
@@ -74,7 +90,7 @@ The schema lives in
 
 | Command | What it does |
 | --- | --- |
-| `pnpm dev` | Dev server on <http://localhost:3000> |
+| `pnpm dev` | Dev server on <http://127.0.0.1:3000> |
 | `pnpm build` | Production build (Nitro server in `.output/`), then a typecheck |
 | `pnpm start` | Runs the built server |
 | `pnpm preview` | Builds, then serves the build on port 4173 |

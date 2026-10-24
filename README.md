@@ -39,7 +39,7 @@ cp .env.example .env   # then fill in your Supabase project
 pnpm dev
 ```
 
-Open <http://localhost:3000>. See [DEVELOPMENT.md](./DEVELOPMENT.md) for the
+Open <http://127.0.0.1:3000>. See [DEVELOPMENT.md](./DEVELOPMENT.md) for the
 Supabase setup, commands and project layout.
 
 ## Tech
