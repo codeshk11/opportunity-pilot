@@ -15,6 +15,22 @@ cp .env.example .env
 pnpm dev
 ```
 
+### Upgrading dependencies
+
+Run `pnpm outdated`, read each package's release notes, then upgrade named
+packages (`pnpm add <name>@<version>`) rather than `pnpm update --latest`.
+Run lint, typecheck, tests and a build afterwards. Two packages are held on
+purpose:
+
+- `typescript` stays on 5.x until typescript-eslint supports TypeScript 7 (it
+  currently allows `<6.1`).
+- `@types/node` follows the Node.js major the app runs on (24, see `.nvmrc`),
+  not the newest types.
+
+TanStack Start pins its matching `@tanstack/react-router` version; upgrade the
+two together. Start 1.169 (stable) renamed `.inputValidator()` to
+`.validator()` on server functions and middleware.
+
 ## Environment variables
 
 Defined and validated in [src/env.ts](./src/env.ts) with T3 Env and Zod. Import

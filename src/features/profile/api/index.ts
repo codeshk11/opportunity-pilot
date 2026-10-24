@@ -22,7 +22,7 @@ export const getProfile = createServerFn({ method: 'GET' })
 // Saves a completed profile and marks onboarding done.
 export const saveProfile = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator(profileSchema)
+  .validator(profileSchema)
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.from('profiles').upsert({
       ...data,
