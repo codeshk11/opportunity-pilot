@@ -7,17 +7,16 @@ export async function signInWithPassword(credentials: Credentials) {
   return data
 }
 
-// Creates the account. The session is null while the project requires the
-// student to confirm their email first; the link returns them to the home
-// page.
+// Send new accounts to a dedicated callback so the app can show a real
+// verified state after Supabase has accepted the email confirmation.
 export async function signUpWithPassword(credentials: Credentials) {
-  const redirectUrl = new URL(window.location.origin)
+  const redirectUrl = new URL('/auth/callback', window.location.origin)
   // Lovable Cloud accepts the loopback IP in its redirect list, not localhost.
   if (redirectUrl.hostname === 'localhost') redirectUrl.hostname = '127.0.0.1'
 
   const { data, error } = await supabase.auth.signUp({
     ...credentials,
-    options: { emailRedirectTo: redirectUrl.origin },
+    options: { emailRedirectTo: redirectUrl.toString() },
   })
   if (error) throw error
   return data
