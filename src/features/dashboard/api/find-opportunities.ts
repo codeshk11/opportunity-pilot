@@ -102,7 +102,7 @@ function classifyYears(text: string): OpportunityYear[] {
 
 function detectFeeRisk(text: string): { feeRisk: FeeRisk; feeWarning: string | null } {
   const normalized = text.replace(/\\s+/g, ' ')
-  const moneyRequest = /\\b(?:pay|payment|paid|fee|fees|charges?|deposit|purchase|buy|costs?)\\b.{0,70}\\b(?:to confirm|to secure|to reserve|to register|registration|enrol(?:l)?ment|internship|training|certificate|selection|offer|joining|onboarding|seat|application)\\b|\\b(?:registration fee|joining fee|training fee|course fee|security deposit|pay to confirm|payment required|fee required|payable to proceed|processing fee|refundable deposit|pay for certificate)\\b|(?:₹|\\bINR\\s?|\\bRs\\.?\\s?)\\s?[\\d,]+/i;
+  const moneyRequest = /\\b(?:registration|joining|training|course|application|processing|security|participation|certificate|program|programme|internship)\\s+(?:fee|charges?|deposit|payment)\\b|\\b(?:pay|payment)\\b.{0,65}\\b(?:to confirm|to secure|to reserve|to register|registration|enrol(?:l)?ment|internship|training|certificate|selection|offer|joining|onboarding|seat|application|fee|deposit)\\b|\\b(?:fee|charges?|deposit|payment)\\b.{0,45}(?:₹|\\bINR\\s?|\\bRs\\.?\\s?)\\s?[\\d,]+|(?:₹|\\bINR\\s?|\\bRs\\.?\\s?)\\s?[\\d,]+.{0,45}\\b(?:fee|charges?|deposit|payment|payable)\\b|\\b(?:pay to confirm|payment required|fee required|payable to proceed|refundable deposit|pay for certificate|paid internship registration)\\b/i
   const match = normalized.match(moneyRequest)
   if (match) {
     const start = Math.max(0, (match.index ?? 0) - 65)
