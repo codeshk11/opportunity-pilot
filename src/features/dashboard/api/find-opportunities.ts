@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
 export type OpportunityRegion = 'Your state' | 'Across India' | 'International' | 'Not specified'
 export type OpportunityYear = '1st year' | '2nd year' | 'All years' | 'Other years' | 'Not specified'
 export type OpportunityCost = 'Free' | 'Paid' | 'Not specified'
+export type FeeRisk = 'Money requested' | 'No fee language found'
 
 export type OpportunitySearchResult = {
   title: string
@@ -16,6 +17,8 @@ export type OpportunitySearchResult = {
   region: OpportunityRegion
   eligibleYears: OpportunityYear[]
   cost: OpportunityCost
+  feeRisk: FeeRisk
+  feeWarning: string | null
   deadline: string | null
   detailsChecked: boolean
 }
@@ -95,6 +98,21 @@ function classifyYears(text: string): OpportunityYear[] {
   if (second) years.push('2nd year')
   if (other) years.push('Other years')
   return years.length ? years : ['Not specified']
+}
+
+function detectFeeRisk(text: string): { feeRisk: FeeRisk; feeWarning: string | null } {
+  const normalized = text.replace(/\\s+/g, ' ')
+  const moneyRequest = /\\b(?:pay|payment|paid|fee|fees|charges?|deposit|purchase|buy|costs?)\\b.{0,70}\\b(?:to confirm|to secure|to reserve|to register|registration|enrol(?:l)?ment|internship|training|certificate|selection|offer|joining|onboarding|seat|application)\\b|\\b(?:registration fee|joining fee|training fee|course fee|security deposit|pay to confirm|payment required|fee required|payable to proceed|processing fee|refundable deposit|pay for certificate)\\b|(?:₹|\\bINR\\s?|\\bRs\\.?\\s?)\\s?[\\d,]+/i;
+  const match = normalized.match(moneyRequest)
+  if (match) {
+    const start = Math.max(0, (match.index ?? 0) - 65)
+    const end = Math.min(normalized.length, (match.index ?? 0) + match[0].length + 65)
+    return {
+      feeRisk: 'Money requested',
+      feeWarning: normalized.slice(start, end).trim(),
+    }
+  }
+  return { feeRisk: 'No fee language found', feeWarning: null }
 }
 
 function classifyCost(text: string): OpportunityCost {
@@ -273,6 +291,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
             region: classifyRegion(evidence, profile.state),
             eligibleYears: classifyYears(evidence),
             cost: classifyCost(evidence),
+            ...detectFeeRisk(evidence),
             deadline: extractDeadline(evidence),
           }
         })
@@ -296,6 +315,7 @@ export const findOpportunities = createServerFn({ method: 'POST' })
         region: classifyRegion(evidence, profile.state),
         eligibleYears: classifyYears(evidence),
         cost: classifyCost(evidence),
+        ...detectFeeRisk(evidence),
         deadline: extractDeadline(evidence),
         detailsChecked: Boolean(pageText),
         snippet: item.snippet,
