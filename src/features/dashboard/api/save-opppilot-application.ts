@@ -35,6 +35,7 @@ export const saveOppPilotApplication = createServerFn({ method: 'POST' })
         applicant_phone: data.phone?.trim().slice(0, 40) || null,
         motivation: data.motivation?.trim().slice(0, 3000) || null,
         status: 'saved_in_opppilot',
+        status_updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,opportunity_url' })
       .select('id')
       .single()
