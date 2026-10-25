@@ -57,10 +57,6 @@ export const submitOppPilotApplication = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .validator((input: SubmitInput) => input)
   .handler(async ({ context, data }) => {
-    if (!env.TINYFISH_API_KEY) {
-      throw new Error('Official submission automation is not configured yet. Add a valid TINYFISH_API_KEY in Vercel project settings.')
-    }
-
     let destination: URL
     try {
       destination = new URL(data.url)
@@ -69,6 +65,28 @@ export const submitOppPilotApplication = createServerFn({ method: 'POST' })
     }
     if (!['http:', 'https:'].includes(destination.protocol)) {
       throw new Error('Only public HTTP or HTTPS application pages are supported.')
+    }
+
+    // Social posts and roundup pages are sources, not application forms. Do not
+    // send a student's personal data to an automation agent for these URLs.
+    const host = destination.hostname.toLowerCase().replace(/^www\\./, '')
+    const socialPostHosts = new Set(['linkedin.com', 'm.facebook.com', 'facebook.com', 'instagram.com', 'x.com', 'twitter.com'])
+    const isSocialPost = socialPostHosts.has(host) && (
+      host === 'linkedin.com' ? destination.pathname.includes('/posts/') || destination.pathname.includes('/feed/update/') : true
+    )
+    if (isSocialPost) {
+      return {
+        submitted: false,
+        status: 'blocked',
+        confirmationMessage: '',
+        missingFields: ['A direct application form URL for one specific opportunity'],
+        finalUrl: destination.toString(),
+        summary: 'This link is a social-media post, not an application form. The LinkedIn post lists several different opportunities, so OppPilot cannot safely choose which organiser should receive your details. Open the post, select one specific opportunity, and add its official Apply/Register form link to that opportunity.',
+      }
+    }
+
+    if (!env.TINYFISH_API_KEY) {
+      throw new Error('Official submission automation is not configured yet. Add a valid TINYFISH_API_KEY in Vercel project settings.')
     }
     if (!data.name.trim() || !data.email.includes('@')) {
       throw new Error('Enter your full name and a valid email before continuing.')
@@ -99,10 +117,12 @@ export const submitOppPilotApplication = createServerFn({ method: 'POST' })
 
     const goal = [
       'You are completing an application on behalf of the signed-in applicant for the opportunity below.',
+      'Verify that this URL is the official application form for the exact named opportunity, not a social post, search results page, or unrelated opportunity listing. If it is not the exact official form, STOP without entering any personal data and return submission_status="blocked" with the reason.',
       'Open and inspect the official application page. Use only the applicant data supplied below.',
       'Fill fields that clearly match the supplied data. Do not invent answers, credentials, dates, grades, work history, references, or documents.',
       'Only provide category or CGPA if the official form explicitly asks for it. Never expose information in unrelated fields.',
       'If the site requires a missing document, account login, OTP, CAPTCHA, payment, or an answer not present in the supplied data, STOP without submitting and report exactly what is needed.',
+      'Before submitting, verify the form and page branding match the exact opportunity title. If there is ambiguity about which opportunity or organiser this is, STOP without submitting.',
       'If the form is fully filled and no missing requirement or blocker remains, submit it. Do not bypass security controls or site restrictions.',
       'Return JSON only with this shape: {"submission_status":"submitted"|"not_submitted"|"blocked","confirmation_message":"...","missing_fields":["..."],"final_url":"...","summary":"..."}.',
       'Set submission_status to "submitted" only if the website visibly confirms successful submission or provides a confirmation/reference number. Otherwise use "not_submitted" or "blocked".',
