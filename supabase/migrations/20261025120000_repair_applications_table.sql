@@ -41,3 +41,6 @@ create index if not exists applications_user_created_idx
   on public.applications (user_id, created_at desc);
 create index if not exists applications_user_status_updated_idx
   on public.applications (user_id, status_updated_at desc);
+
+-- Refresh PostgREST's schema cache after creating/updating the table.
+notify pgrst, 'reload schema';
