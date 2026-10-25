@@ -17,8 +17,11 @@ export const getAutofillProfile = createServerFn({ method: 'POST' })
       throw new Error('Could not load your profile. Please try again.')
     }
 
+    const { data: authData } = await context.supabase.auth.getUser()
+
     return {
       name: profile.name ?? '',
+      email: authData.user?.email ?? '',
       college: profile.college ?? '',
       branch: profile.branch ?? '',
       year: profile.year ?? '',
