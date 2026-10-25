@@ -52,10 +52,10 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
           {submit.isError && <p role="alert" className="mt-2 text-sm text-destructive">{submit.error instanceof Error ? submit.error.message : 'Could not submit. Please use the official page.'}</p>}
           {submit.isSuccess && !submit.data.submitted && (
             <div role="status" className="mt-2 text-sm">
-              <p className="font-medium">Not confirmed as submitted</p>
+              <p className="font-medium">{submit.data.status === 'blocked' ? 'Official application link needed' : 'Not confirmed as submitted'}</p>
               <p className="mt-1">{submit.data.summary}</p>
               {submit.data.missingFields.length > 0 && <p className="mt-1">Still needed: {submit.data.missingFields.join(', ')}</p>}
-              {submit.data.finalUrl && <a className="mt-2 inline-block underline" href={submit.data.finalUrl} target="_blank" rel="noreferrer">Continue on official website</a>}
+              {submit.data.finalUrl && <a className="mt-2 inline-block underline" href={submit.data.finalUrl} target="_blank" rel="noreferrer">{submit.data.status === 'blocked' ? 'Open source post' : 'Continue on official website'}</a>}
             </div>
           )}
           <Button type="button" className="mt-3 rounded-full" disabled={submit.isPending} onClick={() => {
