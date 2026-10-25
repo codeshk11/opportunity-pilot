@@ -17,6 +17,16 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [motivation, setMotivation] = useState('')
+  const [profileDetails, setProfileDetails] = useState({
+    college: '',
+    branch: '',
+    year: '',
+    state: '',
+    category: '',
+    cgpa: '',
+    skills: '',
+    interests: '',
+  })
   const save = useMutation({
     mutationFn: () => saveOppPilotApplication({ data: { title, url, type, name, email, phone, motivation } }),
   })
@@ -28,6 +38,16 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
     onSuccess: (profile) => {
       setName((current) => current || profile.name)
       setEmail((current) => current || profile.email)
+      setProfileDetails({
+        college: profile.college || '',
+        branch: profile.branch || '',
+        year: profile.year || '',
+        state: profile.state || '',
+        category: profile.category || '',
+        cgpa: profile.cgpa || '',
+        skills: Array.isArray(profile.skills) ? profile.skills.join(', ') : String(profile.skills || ''),
+        interests: Array.isArray(profile.interests) ? profile.interests.join(', ') : String(profile.interests || ''),
+      })
     },
   })
 
@@ -89,6 +109,36 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
           <label className="block text-sm font-medium">Phone (optional)
             <Input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1" />
           </label>
+          <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+            <h5 className="font-semibold">Academic profile (from your account)</h5>
+            <p className="mt-1 text-xs text-foreground/60">These details are automatically loaded from your registered OppPilot profile and reused when preparing the organiser application. Update your profile if any detail is incorrect.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <label className="block text-sm font-medium">College / University
+                <Input value={profileDetails.college} readOnly placeholder="Add college in your profile" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium">Branch / Major
+                <Input value={profileDetails.branch} readOnly placeholder="Add branch in your profile" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium">Current year
+                <Input value={profileDetails.year} readOnly placeholder="Add study year in your profile" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium">State
+                <Input value={profileDetails.state} readOnly placeholder="Add state in your profile" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium">CGPA
+                <Input value={profileDetails.cgpa} readOnly placeholder="Not provided" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium">Category (if relevant)
+                <Input value={profileDetails.category} readOnly placeholder="Not provided" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium sm:col-span-2">Skills
+                <Input value={profileDetails.skills} readOnly placeholder="Add skills in your profile" className="mt-1" />
+              </label>
+              <label className="block text-sm font-medium sm:col-span-2">Interests
+                <Input value={profileDetails.interests} readOnly placeholder="Add interests in your profile" className="mt-1" />
+              </label>
+            </div>
+          </div>
           <label className="block text-sm font-medium">Why are you interested? (optional)
             <Textarea maxLength={3000} value={motivation} onChange={(event) => setMotivation(event.target.value)} className="mt-1" rows={3} />
           </label>
