@@ -15,6 +15,24 @@ const regionOptions = ['All regions', 'Your state', 'Across India', 'Internation
 const yearOptions = ['All years', '1st year', '2nd year', 'Other years', 'Not specified']
 const costOptions = ['All costs', 'Free', 'Paid', 'Not specified']
 
+function getDeadlineDays(deadline: string | null): number | null {
+  if (!deadline) return null
+  const [year, month, day] = deadline.split('-').map(Number)
+  const deadlineDate = new Date(year, month - 1, day)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.round((deadlineDate.getTime() - today.getTime()) / 86_400_000)
+}
+
+function getDeadlineLabel(deadline: string | null): string {
+  const daysLeft = getDeadlineDays(deadline)
+  if (daysLeft === null) return 'Deadline not found'
+  if (daysLeft < 0) return 'Deadline passed'
+  if (daysLeft === 0) return 'Due today'
+  if (daysLeft === 1) return '1 day left'
+  return `${daysLeft} days left`
+}
+
 export function WelcomeCard({
   name,
   className,
@@ -64,6 +82,11 @@ export function WelcomeCard({
     if (completenessDifference !== 0) return completenessDifference
     // When completeness is equal, prefer pages whose full content was fetched.
     return Number(b.detailsChecked) - Number(a.detailsChecked)
+  })
+
+  const dueSoonOpportunities = sortedOpportunities.filter((opportunity) => {
+    const daysLeft = getDeadlineDays(opportunity.deadline)
+    return daysLeft !== null && daysLeft >= 0 && daysLeft <= 3
   })
 
   const selectClassName =
@@ -124,6 +147,23 @@ export function WelcomeCard({
               ? search.error.message
               : 'Search failed. Please try again.'}
           </p>
+        )}
+
+        {search.isSuccess && dueSoonOpportunities.length > 0 && (
+          <div role="alert" className="mt-5 rounded-xl border border-amber-300/70 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="font-semibold">Deadlines coming up</p>
+            <p className="mt-1">These opportunities have a deadline within the next 3 days. Confirm the date on the official source before applying.</p>
+            <ul className="mt-2 space-y-1">
+              {dueSoonOpportunities.map((opportunity) => (
+                <li key={opportunity.url}>
+                  <a href={opportunity.url} target="_blank" rel="noreferrer" className="font-medium underline underline-offset-2">
+                    {opportunity.title}
+                  </a>
+                  <span> — {getDeadlineLabel(opportunity.deadline)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {search.isSuccess && (
@@ -193,6 +233,9 @@ export function WelcomeCard({
                         </p>
                       )}
                       <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant={opportunity.deadline ? 'secondary' : 'outline'}>
+                          Deadline: {getDeadlineLabel(opportunity.deadline)}
+                        </Badge>
                         <Badge variant="secondary">Region: {opportunity.region}</Badge>
                         <Badge variant="secondary">Year: {opportunity.eligibleYears.join(', ')}</Badge>
                         <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
