@@ -132,15 +132,15 @@ function extractDeadline(text: string): string | null {
     let day: number
     let parsed = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
     if (parsed) {
-      year = Number(parsed[1]); month = Number(parsed[2]) - 1; day = Number(parsed[3])
+      year = Number(parsed[1]!); month = Number(parsed[2]!) - 1; day = Number(parsed[3]!)
     } else if ((parsed = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/))) {
       // Indian date convention: DD/MM/YYYY.
-      day = Number(parsed[1]); month = Number(parsed[2]) - 1; year = Number(parsed[3])
+      day = Number(parsed[1]!); month = Number(parsed[2]!) - 1; year = Number(parsed[3]!)
     } else if ((parsed = raw.match(/^([A-Za-z]+)\s+(\d{1,2})\s+(\d{4})$/))) {
-      month = monthNames[parsed[1].slice(0, 3).toLowerCase()] ?? -1
-      day = Number(parsed[2]); year = Number(parsed[3])
+      month = monthNames[parsed[1]!.slice(0, 3).toLowerCase()] ?? -1
+      day = Number(parsed[2]!); year = Number(parsed[3]!)
     } else if ((parsed = raw.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/))) {
-      day = Number(parsed[1]); month = monthNames[parsed[2].slice(0, 3).toLowerCase()] ?? -1; year = Number(parsed[3])
+      day = Number(parsed[1]!); month = monthNames[parsed[2]!.slice(0, 3).toLowerCase()] ?? -1; year = Number(parsed[3]!)
     } else {
       continue
     }
