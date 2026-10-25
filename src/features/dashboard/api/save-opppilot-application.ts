@@ -39,8 +39,21 @@ export const saveOppPilotApplication = createServerFn({ method: 'POST' })
       .select('id')
       .single()
 
-    if (error || !saved) {
-      throw new Error('Could not save this application in OppPilot. Please try again.')
+    if (error) {
+      // Keep the full diagnostic in Vercel logs while surfacing a concise
+      // PostgREST error to the signed-in user for faster troubleshooting.
+      console.error('[saveOppPilotApplication] Supabase upsert failed', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
+      throw new Error(`Could not save this application (${error.code || 'database error'}): ${error.message}`)
+    }
+
+    if (!saved) {
+      console.error('[saveOppPilotApplication] Supabase returned no saved row')
+      throw new Error('OppPilot did not confirm that the application was saved. Please try again.')
     }
 
     return { id: saved.id }
