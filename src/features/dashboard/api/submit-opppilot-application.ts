@@ -34,13 +34,13 @@ function parseAgentResult(raw: string): { status: string; result: AgentResult | 
     })
     .filter((event): event is Record<string, unknown> => Boolean(event))
 
-  const complete = [...events].reverse().find((event) => event.type === 'COMPLETE')
+  const complete = [...events].reverse().find((event) => event['type'] === 'COMPLETE')
   if (!complete) {
-    const failed = [...events].reverse().find((event) => event.type === 'ERROR' || event.status === 'FAILED')
-    throw new Error(typeof failed?.message === 'string' ? failed.message : 'TinyFish could not complete the application workflow.')
+    const failed = [...events].reverse().find((event) => event['type'] === 'ERROR' || event['status'] === 'FAILED')
+    throw new Error(typeof failed?.['message'] === 'string' ? failed['message'] : 'TinyFish could not complete the application workflow.')
   }
 
-  const rawResult = complete.resultJson
+  const rawResult = complete['resultJson']
   let result: AgentResult | null = null
   if (typeof rawResult === 'string') {
     try { result = JSON.parse(rawResult) as AgentResult } catch { result = { summary: rawResult } }
@@ -48,7 +48,7 @@ function parseAgentResult(raw: string): { status: string; result: AgentResult | 
     result = rawResult as AgentResult
   }
 
-  return { status: String(complete.status ?? ''), result }
+  return { status: String(complete['status'] ?? ''), result }
 }
 
 // Uses TinyFish to complete the organiser's official application page.
