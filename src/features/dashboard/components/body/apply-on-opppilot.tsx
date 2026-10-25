@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { saveOppPilotApplication } from '@/features/dashboard/api/save-opppilot-application'
+import { getAutofillProfile } from '@/features/dashboard/api/get-autofill-profile'
 import { submitOppPilotApplication } from '@/features/dashboard/api/submit-opppilot-application'
 
 type Props = { title: string; url: string; type: string }
@@ -21,6 +22,13 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
   })
   const submit = useMutation({
     mutationFn: () => submitOppPilotApplication({ data: { title, url, type, name, email, phone, motivation } }),
+  })
+  const autofill = useMutation({
+    mutationFn: () => getAutofillProfile(),
+    onSuccess: (profile) => {
+      setName((current) => current || profile.name)
+      setEmail((current) => current || profile.email)
+    },
   })
 
   if (submit.isSuccess && submit.data.submitted) {
@@ -61,7 +69,7 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
 
   return (
     <div className="mt-3">
-      <Button type="button" onClick={() => setOpen(!open)} variant="default" className="rounded-full">
+      <Button type="button" onClick={() => { const nextOpen = !open; setOpen(nextOpen); if (nextOpen) autofill.mutate() }} variant="default" className="rounded-full">
         <IconClipboardList data-icon="inline-start" />
         {open ? 'Close application form' : 'Apply on OppPilot'}
       </Button>
@@ -69,8 +77,9 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
         <form className="mt-3 space-y-3 rounded-xl border border-border bg-background p-4" onSubmit={(event) => { event.preventDefault(); save.mutate() }}>
           <div>
             <h4 className="font-semibold">Your application details</h4>
-            <p className="mt-1 text-xs text-foreground/60">Enter your contact details. Relevant student-profile fields may also be used for the official form when needed.</p>
+            <p className="mt-1 text-xs text-foreground/60">{autofill.isPending ? "Loading your saved profile…" : "Your name and account email are filled from your profile when available. Check them before continuing."}</p>
           </div>
+          {autofill.isError && <p role="status" className="text-xs text-foreground/60">Could not autofill your profile; you can enter your details manually.</p>}
           <label className="block text-sm font-medium">Full name
             <Input required maxLength={100} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1" />
           </label>
