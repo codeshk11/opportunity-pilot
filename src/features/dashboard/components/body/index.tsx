@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { m } from 'motion/react'
 
 import { InterestsCard } from './interests-card'
+import { ApplicationsTracker } from './applications-tracker'
 import { NextStepsCard } from './next-steps-card'
 import { ProfileCard } from './profile-card'
 import { WelcomeCard } from './welcome-card'
@@ -30,6 +31,7 @@ export function DashboardBody() {
         />
         <ProfileCard profile={profile} className="md:col-span-2" />
         <InterestsCard profile={profile} className="md:col-span-2" />
+        <ApplicationsTracker className="md:col-span-6" />
         <NextStepsCard className="md:col-span-6" />
       </m.div>
     </section>
