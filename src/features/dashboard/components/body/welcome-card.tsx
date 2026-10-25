@@ -17,7 +17,11 @@ const costOptions = ['All costs', 'Free', 'Paid', 'Not specified']
 
 function getDeadlineDays(deadline: string | null): number | null {
   if (!deadline) return null
-  const [year, month, day] = deadline.split('-').map(Number)
+  const parts = deadline.split('-').map(Number)
+  const year = parts[0]
+  const month = parts[1]
+  const day = parts[2]
+  if (!year || !month || !day) return null
   const deadlineDate = new Date(year, month - 1, day)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
