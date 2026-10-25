@@ -244,6 +244,13 @@ export function WelcomeCard({
                         <Badge variant="secondary">Year: {opportunity.eligibleYears.join(', ')}</Badge>
                         <Badge variant="secondary">Cost: {opportunity.cost}</Badge>
                       </div>
+                      {opportunity.feeRisk === 'Money requested' && (
+                        <div role="alert" className="mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+                          <p className="font-semibold">⚠ Money requested — check before proceeding</p>
+                          <p className="mt-1">The source page contains fee or payment language. A listing described as a “free internship” may still ask for payment. Do not pay just to secure selection; verify the fee, refund policy and organiser independently.</p>
+                          {opportunity.feeWarning && <p className="mt-2 text-xs">Source text: “{opportunity.feeWarning}”</p>}
+                        </div>
+                      )}
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <p className="text-xs text-foreground/50">
                           Source: {opportunity.siteName}
