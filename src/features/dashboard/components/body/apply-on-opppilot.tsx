@@ -93,10 +93,24 @@ export function ApplyOnOppPilot({ title, url, type }: Props) {
             <Textarea maxLength={3000} value={motivation} onChange={(event) => setMotivation(event.target.value)} className="mt-1" rows={3} />
           </label>
           <div className="rounded-lg bg-muted/60 p-3 text-xs text-foreground/70">
-            Saving stores your application in OppPilot only. To send details to the organiser, use “Review & submit to organiser” after saving. External forms may require additional information or documents.
+            Saving stores your application in OppPilot only. You can also try the official organiser form directly below; external forms may require additional information or documents.
           </div>
-          {save.isError && <p role="alert" className="text-sm text-destructive">{save.error instanceof Error ? save.error.message : 'Could not save. Please try again.'}</p>}
-          <Button type="submit" disabled={save.isPending} className="rounded-full">{save.isPending ? 'Saving…' : 'Save details & continue'}</Button>
+          {submit.isError && <p role="alert" className="text-sm text-destructive">{submit.error instanceof Error ? submit.error.message : 'Could not submit. Please use the official page.'}</p>}
+          {submit.isSuccess && !submit.data.submitted && (
+            <div role="status" className="rounded-lg border border-border p-3 text-sm">
+              <p className="font-medium">Not confirmed as submitted</p>
+              <p className="mt-1">{submit.data.summary}</p>
+              {submit.data.missingFields.length > 0 && <p className="mt-1">Still needed: {submit.data.missingFields.join(', ')}</p>}
+              {submit.data.finalUrl && <a className="mt-2 inline-block underline" href={submit.data.finalUrl} target="_blank" rel="noreferrer">Continue on official website</a>}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" className="rounded-full" disabled={submit.isPending} onClick={() => {
+              const confirmed = window.confirm('Send your application details to the organiser for "' + title + '"? OppPilot will report success only if the website confirms submission.')
+              if (confirmed) submit.mutate()
+            }}>{submit.isPending ? 'Working on official form…' : 'Review & submit to organiser'}</Button>
+            <Button type="submit" variant="outline" disabled={save.isPending} className="rounded-full">{save.isPending ? 'Saving…' : 'Save to My Applications'}</Button>
+          </div>
         </form>
       )}
     </div>
