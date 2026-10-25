@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { IconSearch, IconSparkles, IconExternalLink, IconDownload } from '@tabler/icons-react'
+import { IconSearch, IconSparkles, IconDownload } from '@tabler/icons-react'
 
 import { BentoCard, BentoIcon } from '@/components/shared/bento-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { findOpportunities } from '@/features/dashboard/api/find-opportunities'
 import { getAutofillProfile } from '@/features/dashboard/api/get-autofill-profile'
+import { ApplyOnOppPilot } from './apply-on-opppilot'
 import { riseIn } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
@@ -204,15 +205,11 @@ export function WelcomeCard({
                           {opportunity.detailsChecked ? 'Page content fetched' : 'Search result only'}
                         </Badge>
                       </div>
-                      <a
-                        href={opportunity.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
-                      >
-                        Open source page
-                        <IconExternalLink aria-hidden className="size-4" />
-                      </a>
+                      <ApplyOnOppPilot
+                        title={opportunity.title}
+                        url={opportunity.url}
+                        type={opportunity.type}
+                      />
                     </li>
                   ))}
                 </ul>
